@@ -94,6 +94,7 @@ class _MovieDetailState extends State<MovieDetail> {
                                   borderRadius: BorderRadius.circular(15),
                                   image: DecorationImage(
                                       filterQuality: FilterQuality.high,
+                                      fit: BoxFit.fill,
                                       image: NetworkImage(
                                           "${Constants.imagePath}${widget.poster_path}"))),
                             ),
