@@ -1,0 +1,77 @@
+FutureBuilder<Movie>(
+                future: movie,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Container(
+                      width: double.infinity,
+                      // height: 240,
+                      decoration: BoxDecoration(
+                          color: primaryCol,
+                          image: DecorationImage(
+                              fit: BoxFit.cover,
+                              filterQuality: FilterQuality.high,
+                              image: AssetImage('lib/Assets/morales.jpeg'))),
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 255,
+                            color: Color.fromARGB(129, 0, 0, 0),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0),
+                                  child: Text(
+                                    "Trailers",
+                                    style: subHead2.copyWith(color: textCol2),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 8,
+                                ),
+                                SizedBox(
+                                  height: 190,
+                                  child: ListView.builder(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 8),
+                                    scrollDirection: Axis.horizontal,
+                                    physics: BouncingScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: 6,
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        margin:
+                                            EdgeInsets.symmetric(horizontal: 4),
+                                        // height: 159,
+                                        width: 290,
+                                        decoration: BoxDecoration(
+                                            color:
+                                                Color.fromARGB(185, 24, 24, 24),
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                            image: DecorationImage(
+                                                fit: BoxFit.fitHeight,
+                                                filterQuality:
+                                                    FilterQuality.high,
+                                                image: NetworkImage(
+                                                    "${Constants.imagePath}${snapshot.data!.results[index].backdropPath}"))),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return SizedBox();
+                },
+              ),

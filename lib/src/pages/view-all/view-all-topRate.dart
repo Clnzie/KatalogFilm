@@ -1,20 +1,31 @@
+import 'package:Itil.Co/src/SetUp/MovieAPI.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTopRateModelApi.dart';
 import 'package:Itil.Co/src/Utils/color.dart';
 import 'package:Itil.Co/src/Utils/constant.dart';
 import 'package:Itil.Co/src/Utils/typography.dart';
 import 'package:Itil.Co/src/pages/core/homepage.dart';
+import 'package:Itil.Co/src/pages/core/movie-detail.dart';
 import 'package:Itil.Co/src/widgets/card-movie.dart';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ViewAllToprate extends StatefulWidget {
-  final MovieTopRate data;
-  const ViewAllToprate({super.key, required this.data});
+  const ViewAllToprate({super.key});
 
   @override
   State<ViewAllToprate> createState() => _ViewAllToprateState();
 }
 
 class _ViewAllToprateState extends State<ViewAllToprate> {
+  late Future<MovieTopRated> movieTopRate;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    movieTopRate = getMovieTopRate();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -53,23 +64,66 @@ class _ViewAllToprateState extends State<ViewAllToprate> {
         body: ListView(
           physics: BouncingScrollPhysics(),
           children: [
-            GridView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              shrinkWrap: true,
-              itemCount: widget.data.results?.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisExtent: 171,
-                mainAxisSpacing: 6,
-                crossAxisSpacing: 6,
-              ),
-              itemBuilder: (context, index) {
-                return CardMovie(
-                    onTap: () {},
-                    imgPoster:
-                        "${Constants.imagePath}${widget.data.results?[index].posterPath}",
-                    title: "${widget.data.results?[index].title}");
+            FutureBuilder<MovieTopRated>(
+              future: movieTopRate,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Text("${snapshot.error}");
+                } else {
+                  return GridView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    shrinkWrap: true,
+                    itemCount: snapshot.data!.results.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      mainAxisExtent: 171,
+                      mainAxisSpacing: 6,
+                      // crossAxisSpacing: 0,
+                    ),
+                    itemBuilder: (context, index) {
+                      return CardMovie(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MovieDetail(
+                                      movieID: snapshot.data!.results[index].id,
+                                      title:
+                                          snapshot.data!.results[index].title,
+                                      originalTitle: snapshot
+                                          .data!.results[index].originalTitle,
+                                      backdrop_path: snapshot
+                                          .data!.results[index].backdropPath,
+                                      overview: snapshot
+                                          .data!.results[index].overview,
+                                      poster_path: snapshot
+                                          .data!.results[index].posterPath,
+                                      release_date: snapshot
+                                          .data!.results[index].releaseDate,
+                                      vote_average: snapshot
+                                          .data!.results[index].voteAverage
+                                          .toString(),
+                                      vote_count: snapshot
+                                          .data!.results[index].voteCount
+                                          .toString(),
+                                      popularity: snapshot
+                                          .data!.results[index].popularity
+                                          .toString(),
+                                      language: snapshot.data!.results[index]
+                                          .originalLanguage,
+                                      genre: snapshot
+                                          .data?.results[index].genreIds),
+                                ));
+                          },
+                          imgPoster:
+                              "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
+                          title: "${snapshot.data!.results[index].title}");
+                    },
+                  );
+                }
               },
             ),
             SizedBox(
