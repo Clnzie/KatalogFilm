@@ -6,10 +6,10 @@ import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTopRateModelApi.dart';
 import 'package:Itil.Co/src/Utils/color.dart';
 import 'package:Itil.Co/src/Utils/constant.dart';
 import 'package:Itil.Co/src/Utils/typography.dart';
-import 'package:Itil.Co/src/pages/core/movie-detail.dart';
-import 'package:Itil.Co/src/pages/view-all/view-all-popular.dart';
-import 'package:Itil.Co/src/pages/view-all/view-all-topRate.dart';
-import 'package:Itil.Co/src/widgets/card-movie.dart';
+import 'package:Itil.Co/src/pages/core/movie_detail.dart';
+import 'package:Itil.Co/src/pages/view-all/view_all_popular.dart';
+import 'package:Itil.Co/src/pages/view-all/view_all_topRate.dart';
+import 'package:Itil.Co/src/widgets/card_movie.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -25,6 +25,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final HttpService httpService = HttpService();
   late Future<Movie> movie;
   late Future<MovieTopRated> movieTopRate;
   ScrollController _controller = ScrollController();
@@ -35,8 +36,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    movie = getMovie();
-    movieTopRate = getMovieTopRate();
+    movie = httpService.getMovie();
+    movieTopRate = httpService.getMovieTopRate();
     fToast = FToast();
     fToast.init(context);
   }
@@ -71,7 +72,8 @@ class _HomePageState extends State<HomePage> {
                     decoration: BoxDecoration(
                         image: DecorationImage(
                             filterQuality: FilterQuality.high,
-                            image: AssetImage("lib/Assets/MovieCo.png"))),
+                            image:
+                                AssetImage("lib/Assets/images/MovieCo.png"))),
                   ),
                 )),
           ),

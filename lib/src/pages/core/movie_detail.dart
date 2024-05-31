@@ -40,12 +40,12 @@ class MovieDetail extends StatefulWidget {
 }
 
 class _MovieDetailState extends State<MovieDetail> {
-  late final YoutubePlayerController _controller = YoutubePlayerController(
-    initialVideoId: "QslJYDX3o8s",
-    flags: YoutubePlayerFlags(
-      autoPlay: false,
-    ),
-  );
+  // late final YoutubePlayerController _controller = YoutubePlayerController(
+  //   initialVideoId: "QslJYDX3o8s",
+  //   flags: YoutubePlayerFlags(
+  //     autoPlay: false,
+  //   ),
+  // );
 
   @override
   void initState() {
@@ -273,15 +273,6 @@ class _MovieDetailState extends State<MovieDetail> {
                               style: subHead1.copyWith(color: textCol2),
                             ),
                           ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
-                              child: YoutubePlayer(controller: _controller)),
                         ),
                       ),
                       SizedBox(

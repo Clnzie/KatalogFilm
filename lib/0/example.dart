@@ -19,14 +19,15 @@ class Example extends StatefulWidget {
 }
 
 class _ExampleState extends State<Example> {
+  final HttpService httpService = HttpService();
   late Future<Movie> movie;
   late FToast fToast;
   int exitCounter = 0;
-  late final YoutubePlayerController _controller = YoutubePlayerController(
-      initialVideoId: "QslJYDX3o8s",
-      flags: YoutubePlayerFlags(
-        autoPlay: false,
-      ));
+  // late final YoutubePlayerController _controller = YoutubePlayerController(
+  //     initialVideoId: "QslJYDX3o8s",
+  //     flags: YoutubePlayerFlags(
+  //       autoPlay: false,
+  //     ));
   List<String> image = [
     'https://i.pinimg.com/originals/08/47/1f/08471f353ddc3fd59765ffa9793654a9.jpg',
     'https://i.pinimg.com/originals/14/58/2e/14582ec257e25330f2c6181928b87259.jpg',
@@ -40,7 +41,7 @@ class _ExampleState extends State<Example> {
     super.initState();
     fToast = FToast();
     fToast.init(context);
-    movie = getMovie();
+    movie = httpService.getMovie();
   }
 
   @override
@@ -49,10 +50,6 @@ class _ExampleState extends State<Example> {
       child: Scaffold(
         body: ListView(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: YoutubePlayer(controller: _controller),
-            ),
             ListView.builder(
               shrinkWrap: true,
               itemCount: image.length,
@@ -63,34 +60,34 @@ class _ExampleState extends State<Example> {
                         vertical: 4.0, horizontal: 8),
                     child: Row(
                       children: [
-                        CachedNetworkImage(
-                          imageUrl: image[index],
-                          imageBuilder: (context, imageProvider) {
-                            return Container(
-                              width: 35,
-                              height: 35,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.blue,
-                                image: DecorationImage(
-                                  image: imageProvider,
-                                ),
-                              ),
-                            );
-                          },
-                          placeholder: (context, url) => Shimmer.fromColors(
-                            baseColor: Color(0xff3a3a3a),
-                            highlightColor: Color.fromARGB(255, 92, 91, 91),
-                            child: Container(
-                              width: 35,
-                              height: 35,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(0xff3a3a3a),
-                              ),
-                            ),
-                          ),
-                        ),
+                        // CachedNetworkImage(
+                        //   imageUrl: image[index],
+                        //   imageBuilder: (context, imageProvider) {
+                        //     return Container(
+                        //       width: 35,
+                        //       height: 35,
+                        //       decoration: BoxDecoration(
+                        //         shape: BoxShape.circle,
+                        //         color: Colors.blue,
+                        //         image: DecorationImage(
+                        //           image: imageProvider,
+                        //         ),
+                        //       ),
+                        //     );
+                        //   },
+                        //   placeholder: (context, url) => Shimmer.fromColors(
+                        //     baseColor: Color(0xff3a3a3a),
+                        //     highlightColor: Color.fromARGB(255, 92, 91, 91),
+                        //     child: Container(
+                        //       width: 35,
+                        //       height: 35,
+                        //       decoration: BoxDecoration(
+                        //         shape: BoxShape.circle,
+                        //         color: Color(0xff3a3a3a),
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                         SizedBox(
                           width: 8,
                         ),
@@ -117,7 +114,19 @@ class _ExampleState extends State<Example> {
                   ),
                 );
               },
-            )
+            ),
+            // FutureBuilder(
+            //   future: httpService.detailMov(),
+            //   builder: (context, snapshot) {
+            //     if (snapshot.connectionState == ConnectionState.waiting) {
+            //       return CircularProgressIndicator();
+            //     } else if (snapshot.hasError) {
+            //       return Text("${snapshot.error}");
+            //     } else {
+            //       return Text(${snapshot.data});
+            //     }
+            //   },
+            // )
           ],
         ),
       ),

@@ -1,44 +1,42 @@
 import 'dart:convert';
+import 'package:Itil.Co/src/SetUp/modelsAPI/MovieDetailModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTrailerModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTopRateModelApi.dart';
 import 'package:http/http.dart' as http;
 
-Future<Movie> getMovie() async {
+class HttpService {
   final String apiKey = "b0b1b7542963befc2f848ce363e5c4ab";
-  final String baseUrl = "https://api.themoviedb.org/3/movie/popular?api_key=";
 
-  final uri = baseUrl + apiKey;
+  Future<Movie> getMovie() async {
+    final String uri =
+        "https://api.themoviedb.org/3/movie/popular?api_key=$apiKey";
 
-  http.Response response = await http.get(Uri.parse(uri));
+    http.Response response = await http.get(Uri.parse(uri));
 
-  if (response.statusCode == 200) {
-    return Movie.fromJson(jsonDecode(response.body));
+    if (response.statusCode == 200) {
+      return Movie.fromJson(jsonDecode(response.body));
+    }
+
+    var responseReturn = jsonDecode(response.body);
+
+    return responseReturn;
   }
 
-  var responseReturn = jsonDecode(response.body);
+  Future<MovieTopRated> getMovieTopRate() async {
+    final String uri =
+        "https://api.themoviedb.org/3/movie/top_rated?api_key=$apiKey";
 
-  return responseReturn;
-}
+    http.Response response = await http.get(Uri.parse(uri));
 
-Future<MovieTopRated> getMovieTopRate() async {
-  final String apiKey = "b0b1b7542963befc2f848ce363e5c4ab";
-  final String baseUrl =
-      "https://api.themoviedb.org/3/movie/top_rated?api_key=";
+    if (response.statusCode == 200) {
+      return MovieTopRated.fromJson(jsonDecode(response.body));
+    }
 
-  final uri = baseUrl + apiKey;
+    var responseReturn = jsonDecode(response.body);
 
-  http.Response response = await http.get(Uri.parse(uri));
-
-  if (response.statusCode == 200) {
-    return MovieTopRated.fromJson(jsonDecode(response.body));
+    return responseReturn;
   }
-
-  var responseReturn = jsonDecode(response.body);
-
-  return responseReturn;
-}
-
 // Future<MovieTrailer> getTrailers(String movieId) async {
 //   const apiKey = 'b0b1b7542963befc2f848ce363e5c4ab';
 //   final url = Uri.parse(
@@ -55,6 +53,26 @@ Future<MovieTopRated> getMovieTopRate() async {
 //   return responseReturn;
 // }
 
+  Future detailMov() async {
+    try {
+      final String uri =
+          "https://api.themoviedb.org/3/movie/823464?api_key=$apiKey";
+
+      http.Response response = await http.get(Uri.parse(uri));
+
+      if (response.statusCode == 200) {
+        print("Succes Get API");
+        final result = MovieDetail.fromJson(jsonDecode(response.body));
+        return result;
+      } else {
+        throw Exception("Failed to get data API movie Detail");
+      }
+    } catch (e) {
+      print("Error to get data API detailMovie $e");
+    }
+  }
+}
+
 // Future<List<MovieTrailer>> getTrailers(String movieId) async {
 //   const apiKey = 'b0b1b7542963befc2f848ce363e5c4ab';
 //   final url = Uri.parse(
@@ -67,28 +85,28 @@ Future<MovieTopRated> getMovieTopRate() async {
 //   return trailers;
 // }
 
-  // Future<void> _fetchTrailer() async {
-  //   final String apiKey = "b0b1b7542963befc2f848ce363e5c4ab";
-  //   final String baseURL =
-  //       "https://api.themoviedb.org/3/movie/${widget.movieID}/videos?api_key=";
+// Future<void> _fetchTrailer() async {
+//   final String apiKey = "b0b1b7542963befc2f848ce363e5c4ab";
+//   final String baseURL =
+//       "https://api.themoviedb.org/3/movie/${widget.movieID}/videos?api_key=";
 
-  //   final uri = baseURL + apiKey;
+//   final uri = baseURL + apiKey;
 
-  //   http.Response response = await http.get(Uri.parse(uri));
+//   http.Response response = await http.get(Uri.parse(uri));
 
-  //   if (response.statusCode == 200) {
-  //     final Map<String, dynamic> data = json.decode(response.body);
-  //     final List<dynamic> results = data['results'];
-  //     if (results.isNotEmpty) {
-  //       final String trailerKey = results[0]['key'];
-  //       final videoUrl = 'https://www.youtube.com/watch?v=$trailerKey';
-  //       _controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-  //       await Future.wait(_controller.initialize());
-  //     }
-  //   } else {
-  //     throw Exception('Failed to load trailers');
-  //   }
-  // }
+//   if (response.statusCode == 200) {
+//     final Map<String, dynamic> data = json.decode(response.body);
+//     final List<dynamic> results = data['results'];
+//     if (results.isNotEmpty) {
+//       final String trailerKey = results[0]['key'];
+//       final videoUrl = 'https://www.youtube.com/watch?v=$trailerKey';
+//       _controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+//       await Future.wait(_controller.initialize());
+//     }
+//   } else {
+//     throw Exception('Failed to load trailers');
+//   }
+// }
 
 // class HttpService {
 //   final String apiKey = "b0b1b7542963befc2f848ce363e5c4ab";

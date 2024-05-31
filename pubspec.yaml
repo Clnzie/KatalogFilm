@@ -52,12 +52,12 @@ flutter_native_splash:
   web: false
   color: "#171717"
   
-  image: lib/Assets/MovieCo.png
+  image: lib/Assets/images/MovieCo.png
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "lib/Assets/Mov1.png"
+  image_path: "lib/Assets/images/Mov1.png"
 
 dev_dependencies:
   flutter_test:

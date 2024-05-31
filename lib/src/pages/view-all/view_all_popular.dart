@@ -1,29 +1,30 @@
 import 'package:Itil.Co/src/SetUp/MovieAPI.dart';
-import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTopRateModelApi.dart';
+import 'package:Itil.Co/src/SetUp/modelsAPI/MovieModelApi.dart';
 import 'package:Itil.Co/src/Utils/color.dart';
 import 'package:Itil.Co/src/Utils/constant.dart';
 import 'package:Itil.Co/src/Utils/typography.dart';
 import 'package:Itil.Co/src/pages/core/homepage.dart';
-import 'package:Itil.Co/src/pages/core/movie-detail.dart';
-import 'package:Itil.Co/src/widgets/card-movie.dart';
+import 'package:Itil.Co/src/pages/core/movie_detail.dart';
+import 'package:Itil.Co/src/widgets/card_movie.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-class ViewAllToprate extends StatefulWidget {
-  const ViewAllToprate({super.key});
+class ViewAllPopular extends StatefulWidget {
+  const ViewAllPopular({super.key});
 
   @override
-  State<ViewAllToprate> createState() => _ViewAllToprateState();
+  State<ViewAllPopular> createState() => _ViewAllPopularState();
 }
 
-class _ViewAllToprateState extends State<ViewAllToprate> {
-  late Future<MovieTopRated> movieTopRate;
+class _ViewAllPopularState extends State<ViewAllPopular> {
+  final HttpService httpService = HttpService();
+  late Future<Movie> movie;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    movieTopRate = getMovieTopRate();
+    movie = httpService.getMovie();
   }
 
   @override
@@ -54,7 +55,7 @@ class _ViewAllToprateState extends State<ViewAllToprate> {
                         )),
                   ),
                   Text(
-                    "Top Rate",
+                    "Popular",
                     style: subHead1.copyWith(color: textCol2),
                   )
                 ],
@@ -64,8 +65,8 @@ class _ViewAllToprateState extends State<ViewAllToprate> {
         body: ListView(
           physics: BouncingScrollPhysics(),
           children: [
-            FutureBuilder<MovieTopRated>(
-              future: movieTopRate,
+            FutureBuilder<Movie>(
+              future: movie,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
@@ -92,17 +93,17 @@ class _ViewAllToprateState extends State<ViewAllToprate> {
                                   builder: (context) => MovieDetail(
                                       movieID: snapshot.data!.results[index].id,
                                       title:
-                                          snapshot.data!.results[index].title,
-                                      originalTitle: snapshot
-                                          .data!.results[index].originalTitle,
-                                      backdrop_path: snapshot
-                                          .data!.results[index].backdropPath,
-                                      overview: snapshot
-                                          .data!.results[index].overview,
-                                      poster_path: snapshot
-                                          .data!.results[index].posterPath,
-                                      release_date: snapshot
-                                          .data!.results[index].releaseDate,
+                                          "${snapshot.data!.results[index].title}",
+                                      originalTitle:
+                                          "${snapshot.data!.results[index].originalTitle}",
+                                      backdrop_path:
+                                          "${snapshot.data!.results[index].backdropPath}",
+                                      overview:
+                                          "${snapshot.data!.results[index].overview}",
+                                      poster_path:
+                                          "${snapshot.data!.results[index].posterPath}",
+                                      release_date:
+                                          "${snapshot.data!.results[index].releaseDate}",
                                       vote_average: snapshot
                                           .data!.results[index].voteAverage
                                           .toString(),
@@ -112,10 +113,10 @@ class _ViewAllToprateState extends State<ViewAllToprate> {
                                       popularity: snapshot
                                           .data!.results[index].popularity
                                           .toString(),
-                                      language: snapshot.data!.results[index]
-                                          .originalLanguage,
+                                      language:
+                                          "${snapshot.data!.results[index].originalLanguage}",
                                       genre: snapshot
-                                          .data?.results[index].genreIds),
+                                          .data!.results[index].genreIds),
                                 ));
                           },
                           imgPoster:
