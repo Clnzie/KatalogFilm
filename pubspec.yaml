@@ -50,14 +50,15 @@ flutter_native_splash:
   android: true
   ios: true
   web: false
-  color: "#171717"
+  # color: "#171717"
   
-  image: lib/Assets/images/MovieCo.png
+  image: Assets/images/Mov1.png
+  background_image: Assets/images/Splash Screen New.png
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "lib/Assets/images/Mov1.png"
+  image_path: "Assets/images/Mov1.png"
 
 dev_dependencies:
   flutter_test:
@@ -83,7 +84,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - lib/Assets/
+    - Assets/images/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -97,10 +98,26 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: Assets/fonts/Poppins-Thin.ttf
+          weight: 100
+        - asset: Assets/fonts/Poppins-ExtraLight.ttf
+          weight: 200
+        - asset: Assets/fonts/Poppins-Light.ttf
+          weight: 300
+        - asset: Assets/fonts/Poppins-Regular.ttf
+        - asset: Assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: Assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: Assets/fonts/Poppins-Bold.ttf
+          weight: 700
+        - asset: Assets/fonts/Poppins-ExtraBold.ttf
+          weight: 800
+        - asset: Assets/fonts/Poppins-Black.ttf
+          weight: 900
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro

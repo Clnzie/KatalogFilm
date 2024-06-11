@@ -1,14 +1,15 @@
-import 'dart:io';
-
+import 'package:Itil.Co/0/asd.dart';
 import 'package:Itil.Co/src/SetUp/MovieAPI.dart';
+import 'package:Itil.Co/src/SetUp/modelsAPI/MovieDetailModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieModelApi.dart';
 import 'package:Itil.Co/src/Utils/color.dart';
+import 'package:Itil.Co/src/Utils/typography.dart';
+import 'package:Itil.Co/src/widgets/carousel_widget.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class Example extends StatefulWidget {
   static String videoID = 'QslJYDX3o8s';
@@ -19,10 +20,12 @@ class Example extends StatefulWidget {
 }
 
 class _ExampleState extends State<Example> {
+  final ColorApp _colorApp = ColorApp();
+  final TextStyleApp _textStyleApp = TextStyleApp();
   final HttpService httpService = HttpService();
-  late Future<Movie> movie;
   late FToast fToast;
   int exitCounter = 0;
+  late Future<Movie> movie;
   // late final YoutubePlayerController _controller = YoutubePlayerController(
   //     initialVideoId: "QslJYDX3o8s",
   //     flags: YoutubePlayerFlags(
@@ -50,83 +53,124 @@ class _ExampleState extends State<Example> {
       child: Scaffold(
         body: ListView(
           children: [
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: image.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 4.0, horizontal: 8),
-                    child: Row(
-                      children: [
-                        // CachedNetworkImage(
-                        //   imageUrl: image[index],
-                        //   imageBuilder: (context, imageProvider) {
-                        //     return Container(
-                        //       width: 35,
-                        //       height: 35,
-                        //       decoration: BoxDecoration(
-                        //         shape: BoxShape.circle,
-                        //         color: Colors.blue,
-                        //         image: DecorationImage(
-                        //           image: imageProvider,
-                        //         ),
-                        //       ),
-                        //     );
-                        //   },
-                        //   placeholder: (context, url) => Shimmer.fromColors(
-                        //     baseColor: Color(0xff3a3a3a),
-                        //     highlightColor: Color.fromARGB(255, 92, 91, 91),
-                        //     child: Container(
-                        //       width: 35,
-                        //       height: 35,
-                        //       decoration: BoxDecoration(
-                        //         shape: BoxShape.circle,
-                        //         color: Color(0xff3a3a3a),
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
-                        SizedBox(
-                          width: 8,
+            CachedNetworkImage(
+              imageUrl:
+                  "https://i.pinimg.com/originals/08/47/1f/08471f353ddc3fd59765ffa9793654a9.jpg",
+              filterQuality: FilterQuality.high,
+              imageBuilder: (context, imageProvider) {
+                return Container(
+                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  width: 115,
+                  height: 171,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      gradient: LinearGradient(colors: [
+                        Color(0xff000000),
+                        Color.fromARGB(0, 0, 0, 0)
+                      ], begin: Alignment.bottomCenter, end: Alignment.center)),
+                  child: InkWell(
+                    onTap: () {},
+                    borderRadius: BorderRadius.circular(15),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 6),
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Text(
+                          "title",
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: _textStyleApp.textXL.copyWith(
+                              color: _colorApp.textCol2,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13),
                         ),
-                        Column(
-                          children: [
-                            Text(
-                              "data",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  fontSize: 14),
-                            ),
-                            Text(
-                              "data",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.black,
-                                  fontSize: 12),
-                            ),
-                          ],
-                        )
-                      ],
+                      ),
                     ),
                   ),
                 );
               },
+              placeholder: (context, url) => Shimmer.fromColors(
+                baseColor: _colorApp.baseColShimmer,
+                highlightColor: _colorApp.highlightColShimmer,
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  width: 115,
+                  // height: 171,
+                  decoration: BoxDecoration(
+                      color: Color(0xff3a3a3a),
+                      borderRadius: BorderRadius.circular(15)),
+                ),
+              ),
+              errorWidget: (context, url, error) => Icon(
+                Icons.error_outline_rounded,
+                color: Colors.red,
+                size: 24,
+              ),
             ),
-            // FutureBuilder(
-            //   future: httpService.detailMov(),
-            //   builder: (context, snapshot) {
-            //     if (snapshot.connectionState == ConnectionState.waiting) {
-            //       return CircularProgressIndicator();
-            //     } else if (snapshot.hasError) {
-            //       return Text("${snapshot.error}");
-            //     } else {
-            //       return Text(${snapshot.data});
-            //     }
-            //   },
-            // )
+            FutureBuilder<Movie>(
+              future: movie,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text("${snapshot.error}");
+                } else {
+                  return ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: snapshot.data!.results.length,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Asd(
+                                    movieId: snapshot.data!.results[index].id
+                                        .toString()),
+                              ));
+                        },
+                        child: Card(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 4.0, horizontal: 8),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${snapshot.data!.results[index].title}",
+                                      style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                          fontSize: 14),
+                                    ),
+                                    Text(
+                                      "data",
+                                      style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.black,
+                                          fontSize: 12),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
+              },
+            ),
           ],
         ),
       ),
@@ -137,7 +181,7 @@ class _ExampleState extends State<Example> {
     Widget toast = Container(
       padding: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
       decoration: BoxDecoration(
-          color: textCol2, borderRadius: BorderRadius.circular(12)),
+          color: _colorApp.textCol2, borderRadius: BorderRadius.circular(12)),
       child: Text(
         "Press again to exit",
         style: TextStyle(fontSize: 16, color: Colors.black),

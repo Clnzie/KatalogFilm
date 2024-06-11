@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       builder: FToastBuilder(),
       debugShowCheckedModeBanner: false,
       title: "Movie.Co",
-      home: Example(),
+      home: HomePage(),
     );
   }
 }

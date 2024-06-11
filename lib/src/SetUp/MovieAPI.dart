@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieDetailModelApi.dart';
+import 'package:Itil.Co/src/SetUp/modelsAPI/MovieNowPlaying.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTrailerModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTopRateModelApi.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/retry.dart';
 
 class HttpService {
   final String apiKey = "b0b1b7542963befc2f848ce363e5c4ab";
@@ -37,6 +39,38 @@ class HttpService {
 
     return responseReturn;
   }
+
+  Future<MovieDetailApi?> getDetailMovie(String id) async {
+    final String uri = "https://api.themoviedb.org/3/movie/$id?api_key=$apiKey";
+
+    http.Response response = await http.get(Uri.parse(uri));
+
+    if (response.statusCode == 200) {
+      print("Succes Get API");
+      // final jsonResponse = jsonDecode(response.body) as List;
+      // return jsonResponse.map((e) => MovieDetailApi?.fromJson(e)).toList();
+      return MovieDetailApi.fromJson(jsonDecode(response.body));
+    }
+    var responseReturn = jsonDecode(response.body);
+
+    return responseReturn;
+  }
+
+  Future<MovieNowPlaying> getMovieNowPlaying() async {
+    final String uri =
+        "https://api.themoviedb.org/3/movie/now_playing?api_key=$apiKey";
+
+    http.Response response = await http.get(Uri.parse(uri));
+
+    if (response.statusCode == 200) {
+      return MovieNowPlaying.fromJson(jsonDecode(response.body));
+    }
+
+    var responeReturn = jsonDecode(response.body);
+
+    return responeReturn;
+  }
+
 // Future<MovieTrailer> getTrailers(String movieId) async {
 //   const apiKey = 'b0b1b7542963befc2f848ce363e5c4ab';
 //   final url = Uri.parse(
@@ -52,25 +86,6 @@ class HttpService {
 
 //   return responseReturn;
 // }
-
-  Future detailMov() async {
-    try {
-      final String uri =
-          "https://api.themoviedb.org/3/movie/823464?api_key=$apiKey";
-
-      http.Response response = await http.get(Uri.parse(uri));
-
-      if (response.statusCode == 200) {
-        print("Succes Get API");
-        final result = MovieDetail.fromJson(jsonDecode(response.body));
-        return result;
-      } else {
-        throw Exception("Failed to get data API movie Detail");
-      }
-    } catch (e) {
-      print("Error to get data API detailMovie $e");
-    }
-  }
 }
 
 // Future<List<MovieTrailer>> getTrailers(String movieId) async {

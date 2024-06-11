@@ -17,6 +17,8 @@ class ViewAllPopular extends StatefulWidget {
 }
 
 class _ViewAllPopularState extends State<ViewAllPopular> {
+  final ColorApp _colorApp = ColorApp();
+  final TextStyleApp _textStyleApp = TextStyleApp();
   final HttpService httpService = HttpService();
   late Future<Movie> movie;
 
@@ -50,13 +52,14 @@ class _ViewAllPopularState extends State<ViewAllPopular> {
                         },
                         icon: Icon(
                           Icons.arrow_back_ios_new_rounded,
-                          color: textCol2,
+                          color: _colorApp.textCol2,
                           size: 18,
                         )),
                   ),
                   Text(
                     "Popular",
-                    style: subHead1.copyWith(color: textCol2),
+                    style: _textStyleApp.subHead1
+                        .copyWith(color: _colorApp.textCol2),
                   )
                 ],
               ),
@@ -91,32 +94,8 @@ class _ViewAllPopularState extends State<ViewAllPopular> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => MovieDetail(
-                                      movieID: snapshot.data!.results[index].id,
-                                      title:
-                                          "${snapshot.data!.results[index].title}",
-                                      originalTitle:
-                                          "${snapshot.data!.results[index].originalTitle}",
-                                      backdrop_path:
-                                          "${snapshot.data!.results[index].backdropPath}",
-                                      overview:
-                                          "${snapshot.data!.results[index].overview}",
-                                      poster_path:
-                                          "${snapshot.data!.results[index].posterPath}",
-                                      release_date:
-                                          "${snapshot.data!.results[index].releaseDate}",
-                                      vote_average: snapshot
-                                          .data!.results[index].voteAverage
-                                          .toString(),
-                                      vote_count: snapshot
-                                          .data!.results[index].voteCount
-                                          .toString(),
-                                      popularity: snapshot
-                                          .data!.results[index].popularity
-                                          .toString(),
-                                      language:
-                                          "${snapshot.data!.results[index].originalLanguage}",
-                                      genre: snapshot
-                                          .data!.results[index].genreIds),
+                                    movieID: snapshot.data!.results[index].id,
+                                  ),
                                 ));
                           },
                           imgPoster:
