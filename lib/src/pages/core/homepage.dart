@@ -13,6 +13,7 @@ import 'package:Itil.Co/src/pages/view-all/view_all_popular.dart';
 import 'package:Itil.Co/src/pages/view-all/view_all_topRate.dart';
 import 'package:Itil.Co/src/widgets/card_movie.dart';
 import 'package:Itil.Co/src/widgets/carousel_widget.dart';
+import 'package:Itil.Co/src/widgets/shimmer_card.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -43,6 +44,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    httpService.getMovieNowPlaying();
     movie = httpService.getMovie();
     movieTopRate = httpService.getMovieTopRate();
     movieNowPlaying = httpService.getMovieNowPlaying();
@@ -272,13 +274,15 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Now Playing",
+                      "Now Playing Movie",
                       style: _textStyleApp.subHead3.copyWith(
                         color: _colorApp.textCol2,
                       ),
                     ),
                     TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          print("asd");
+                        },
                         child: Text(
                           "see all",
                           style: _textStyleApp.textS
@@ -307,53 +311,7 @@ class _HomePageState extends State<HomePage> {
                           return Container(
                             margin: EdgeInsets.symmetric(horizontal: 6),
                             width: 110,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Shimmer.fromColors(
-                                  baseColor: _colorApp.baseColShimmer,
-                                  highlightColor: _colorApp.highlightColShimmer,
-                                  child: Container(
-                                    height: 163,
-                                    width: 110,
-                                    decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius:
-                                            BorderRadius.circular(15)),
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: 9,
-                                ),
-                                Shimmer.fromColors(
-                                  baseColor: _colorApp.baseColShimmer,
-                                  highlightColor: _colorApp.highlightColShimmer,
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 15,
-                                    decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius:
-                                            BorderRadius.circular(50)),
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: 6,
-                                ),
-                                Shimmer.fromColors(
-                                  baseColor: _colorApp.baseColShimmer,
-                                  highlightColor: _colorApp.highlightColShimmer,
-                                  child: Container(
-                                    width: 70,
-                                    height: 15,
-                                    decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius:
-                                            BorderRadius.circular(50)),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            child: ShimmerCard(),
                           );
                         },
                       ),
@@ -367,158 +325,150 @@ class _HomePageState extends State<HomePage> {
                         padding: EdgeInsets.symmetric(horizontal: 6),
                         scrollDirection: Axis.horizontal,
                         shrinkWrap: true,
-                        itemCount: snapshot.data!.results?.length,
+                        itemCount: snapshot.data!.results.length,
                         itemBuilder: (context, index) {
-                          return Container(
-                            margin: EdgeInsets.symmetric(horizontal: 6),
-                            width: 110,
-                            child: CachedNetworkImage(
-                              imageUrl:
-                                  "${Constants.imagePath}${snapshot.data!.results?[index].posterPath}",
-                              imageBuilder: (context, imageProvider) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(15),
-                                      child: Image(
-                                        image: imageProvider,
-                                        width: 110,
-                                        height: 163,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 6,
-                                    ),
-                                    Text(
-                                      "${snapshot.data!.results?[index].title}",
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                      style: _textStyleApp.textXL.copyWith(
-                                          color: _colorApp.textCol2,
-                                          fontWeight: FontWeight.w600),
-                                    )
-                                  ],
-                                );
-                              },
-                              progressIndicatorBuilder:
-                                  (context, url, progress) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Shimmer.fromColors(
-                                      baseColor: _colorApp.baseColShimmer,
-                                      highlightColor:
-                                          _colorApp.highlightColShimmer,
-                                      child: Container(
-                                        height: 163,
-                                        width: 110,
-                                        decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            borderRadius:
-                                                BorderRadius.circular(15)),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 9,
-                                    ),
-                                    Shimmer.fromColors(
-                                      baseColor: _colorApp.baseColShimmer,
-                                      highlightColor:
-                                          _colorApp.highlightColShimmer,
-                                      child: Container(
-                                        width: double.infinity,
-                                        height: 15,
-                                        decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            borderRadius:
-                                                BorderRadius.circular(50)),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 6,
-                                    ),
-                                    Shimmer.fromColors(
-                                      baseColor: _colorApp.baseColShimmer,
-                                      highlightColor:
-                                          _colorApp.highlightColShimmer,
-                                      child: Container(
-                                        width: 70,
-                                        height: 15,
-                                        decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            borderRadius:
-                                                BorderRadius.circular(50)),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                              // placeholder: (context, url) {
-                              //   return Column(
-                              //     crossAxisAlignment: CrossAxisAlignment.start,
-                              //     children: [
-                              //       Shimmer.fromColors(
-                              //         baseColor: _colorApp.baseColShimmer,
-                              //         highlightColor:
-                              //             _colorApp.highlightColShimmer,
-                              //         child: Container(
-                              //           height: 163,
-                              //           width: 110,
-                              //           decoration: BoxDecoration(
-                              //               color: Colors.red,
-                              //               borderRadius:
-                              //                   BorderRadius.circular(15)),
-                              //         ),
-                              //       ),
-                              //       SizedBox(
-                              //         height: 9,
-                              //       ),
-                              //       Shimmer.fromColors(
-                              //         baseColor: _colorApp.baseColShimmer,
-                              //         highlightColor:
-                              //             _colorApp.highlightColShimmer,
-                              //         child: Container(
-                              //           width: double.infinity,
-                              //           height: 15,
-                              //           decoration: BoxDecoration(
-                              //               color: Colors.red,
-                              //               borderRadius:
-                              //                   BorderRadius.circular(50)),
-                              //         ),
-                              //       ),
-                              //       SizedBox(
-                              //         height: 6,
-                              //       ),
-                              //       Shimmer.fromColors(
-                              //         baseColor: _colorApp.baseColShimmer,
-                              //         highlightColor:
-                              //             _colorApp.highlightColShimmer,
-                              //         child: Container(
-                              //           width: 70,
-                              //           height: 15,
-                              //           decoration: BoxDecoration(
-                              //               color: Colors.red,
-                              //               borderRadius:
-                              //                   BorderRadius.circular(50)),
-                              //         ),
-                              //       ),
-                              //     ],
-                              //   );
-                              // },
-                              errorWidget: (context, url, error) => Icon(
-                                Icons.error_outline_rounded,
-                                color: Colors.red,
-                                size: 24,
-                              ),
-                            ),
-                          );
+                          return CardMovie(
+                              onTap: () {},
+                              imgPoster:
+                                  "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
+                              title: "${snapshot.data!.results[index].title}");
                         },
                       ),
                     );
                   }
                 },
               ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Popular Movie",
+                      style: _textStyleApp.subHead3.copyWith(
+                        color: _colorApp.textCol2,
+                      ),
+                    ),
+                    TextButton(
+                        onPressed: () {
+                          print("asd");
+                        },
+                        child: Text(
+                          "see all",
+                          style: _textStyleApp.textS
+                              .copyWith(color: _colorApp.textCol1),
+                        )),
+                  ],
+                ),
+              ),
+              FutureBuilder<Movie>(
+                future: movie,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SizedBox(
+                      height: 210,
+                      child: ListView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.symmetric(horizontal: 6),
+                        scrollDirection: Axis.horizontal,
+                        shrinkWrap: true,
+                        itemCount: 3,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            margin: EdgeInsets.symmetric(horizontal: 6),
+                            width: 110,
+                            child: ShimmerCard(),
+                          );
+                        },
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text("${snapshot.error}");
+                  } else {
+                    return SizedBox(
+                      height: 210,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.symmetric(horizontal: 6),
+                        shrinkWrap: true,
+                        itemCount: snapshot.data!.results.length,
+                        itemBuilder: (context, index) {
+                          return CardMovie(
+                              onTap: () {},
+                              imgPoster:
+                                  "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
+                              title: "${snapshot.data!.results[index].title}");
+                        },
+                      ),
+                    );
+                  }
+                },
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Top Rated Movie",
+                      style: _textStyleApp.subHead3
+                          .copyWith(color: _colorApp.textCol2),
+                    ),
+                    Text(
+                      "see all",
+                      style: _textStyleApp.textS
+                          .copyWith(color: _colorApp.textCol1),
+                    )
+                  ],
+                ),
+              ),
+              FutureBuilder<MovieTopRated>(
+                future: movieTopRate,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SizedBox(
+                      height: 210,
+                      child: ListView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.symmetric(horizontal: 6),
+                        scrollDirection: Axis.horizontal,
+                        shrinkWrap: true,
+                        itemCount: 3,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            margin: EdgeInsets.symmetric(horizontal: 6),
+                            width: 110,
+                            child: ShimmerCard(),
+                          );
+                        },
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text("${snapshot.error}");
+                  } else {
+                    return SizedBox(
+                      height: 210,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        shrinkWrap: true,
+                        itemCount: snapshot.data!.results.length,
+                        itemBuilder: (context, index) {
+                          return CardMovie(
+                              onTap: () {},
+                              imgPoster:
+                                  "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
+                              title: "${snapshot.data!.results[index].title}");
+                        },
+                      ),
+                    );
+                  }
+                },
+              ),
+              SizedBox(
+                height: 14,
+              )
             ],
           ),
         ),
@@ -585,6 +535,8 @@ String getGenreName(int genreId) {
 }
 
 
+
+ 
 
 //               //Popular
 //               Padding(
