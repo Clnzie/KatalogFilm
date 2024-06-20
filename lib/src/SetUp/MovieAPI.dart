@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'package:Itil.Co/src/SetUp/modelsAPI/MovieCreditsModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieDetailModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieNowPlaying.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTrailerModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTopRateModelApi.dart';
 import 'package:http/http.dart' as http;
-import 'package:http/retry.dart';
 
 class HttpService {
   final String apiKey = "b0b1b7542963befc2f848ce363e5c4ab";
@@ -40,7 +40,7 @@ class HttpService {
     return responseReturn;
   }
 
-  Future<MovieDetailApi?> getDetailMovie(String id) async {
+  Future<MovieDetailApi> getDetailMovie(String id) async {
     final String uri = "https://api.themoviedb.org/3/movie/$id?api_key=$apiKey";
 
     http.Response response = await http.get(Uri.parse(uri));
@@ -57,19 +57,54 @@ class HttpService {
   }
 
   Future<MovieNowPlaying> getMovieNowPlaying() async {
+    try {
+      final String uri =
+          "https://api.themoviedb.org/3/movie/now_playing?api_key=$apiKey";
+
+      http.Response response = await http.get(Uri.parse(uri));
+
+      if (response.statusCode == 200) {
+        return MovieNowPlaying.fromJson(jsonDecode(response.body));
+      }
+
+      var responeReturn = jsonDecode(response.body);
+
+      return responeReturn;
+    } catch (e) {
+      throw Exception("error API");
+    }
+  }
+
+  // Future<List<MovieCredits?>> getMovieCredits(String movieID) async {
+  //   final String uri =
+  //       "https://api.themoviedb.org/3/movie/$movieID/credits?api_key=$apiKey";
+
+  //   http.Response response = await http.get(Uri.parse(uri));
+
+  //   if (response.statusCode == 200) {
+  //     final decodeData = jsonDecode(response.body);
+  //     final respon = decodeData['cast'];
+  //     return respon.map((e) => MovieCredits?.fromJson(e)).toList();
+  //   } else {
+  //     throw Exception("Failed to get data");
+  //   }
+  // }
+
+  Future<MovieCredits> getMovieCredits(String movieID) async {
     final String uri =
-        "https://api.themoviedb.org/3/movie/now_playing?api_key=$apiKey";
+        "https://api.themoviedb.org/3/movie/$movieID/credits?api_key=$apiKey";
 
     http.Response response = await http.get(Uri.parse(uri));
 
     if (response.statusCode == 200) {
-      return MovieNowPlaying.fromJson(jsonDecode(response.body));
+      return MovieCredits.fromJson(jsonDecode(response.body));
     }
 
-    var responeReturn = jsonDecode(response.body);
+    var responRetrun = jsonDecode(response.body);
 
-    return responeReturn;
+    return responRetrun;
   }
+}
 
 // Future<MovieTrailer> getTrailers(String movieId) async {
 //   const apiKey = 'b0b1b7542963befc2f848ce363e5c4ab';
@@ -86,7 +121,6 @@ class HttpService {
 
 //   return responseReturn;
 // }
-}
 
 // Future<List<MovieTrailer>> getTrailers(String movieId) async {
 //   const apiKey = 'b0b1b7542963befc2f848ce363e5c4ab';

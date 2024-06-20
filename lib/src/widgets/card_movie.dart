@@ -19,43 +19,46 @@ class CardMovie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 6),
-      width: 110,
-      child: CachedNetworkImage(
-        imageUrl: imgPoster,
-        imageBuilder: (context, imageProvider) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image(
-                  image: imageProvider,
-                  width: 110,
-                  height: 163,
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 6),
+        width: 110,
+        child: CachedNetworkImage(
+          imageUrl: imgPoster,
+          imageBuilder: (context, imageProvider) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image(
+                    image: imageProvider,
+                    width: 110,
+                    height: 163,
+                  ),
                 ),
-              ),
-              SizedBox(
-                height: 6,
-              ),
-              Text(
-                title,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
-                style: _textStyleApp.textXL.copyWith(
-                    color: _colorApp.textCol2, fontWeight: FontWeight.w600),
-              )
-            ],
-          );
-        },
-        placeholder: (context, url) {
-          return ShimmerCard();
-        },
-        errorWidget: (context, url, error) => Icon(
-          Icons.error_outline_rounded,
-          color: Colors.red,
-          size: 24,
+                SizedBox(
+                  height: 6,
+                ),
+                Text(
+                  title,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                  style: _textStyleApp.textXL.copyWith(
+                      color: _colorApp.textCol2, fontWeight: FontWeight.w600),
+                )
+              ],
+            );
+          },
+          placeholder: (context, url) {
+            return ShimmerCard();
+          },
+          errorWidget: (context, url, error) => Icon(
+            Icons.error_outline_rounded,
+            color: Colors.red,
+            size: 24,
+          ),
         ),
       ),
     );

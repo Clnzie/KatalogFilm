@@ -70,45 +70,44 @@ class _HomePageState extends State<HomePage> {
         child: Scaffold(
           backgroundColor: Color(0xff171717),
           //APP BAR
-          appBar: PreferredSize(
-              preferredSize: Size.fromHeight(79),
-              child: Container(
-                // color: Colors.red,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
+          appBar: Hidable(
+            controller: _controller,
+            preferredWidgetSize: Size.fromHeight(79),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Welcome to,",
-                            style: _textStyleApp.textXL
-                                .copyWith(color: _colorApp.textCol2),
-                          ),
-                          Image.asset(
-                            "Assets/images/MovieCo.png",
-                            width: 130,
-                            height: 29,
-                          )
-                        ],
+                      Text(
+                        "Welcome to,",
+                        style: _textStyleApp.textXL
+                            .copyWith(color: _colorApp.textCol2),
                       ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.search_rounded),
-                        color: _colorApp.primaryCol,
-                        splashColor: const Color.fromARGB(255, 255, 255, 201),
-                        style: ButtonStyle(
-                            backgroundColor:
-                                WidgetStatePropertyAll(_colorApp.tertiaryCol)),
+                      Image.asset(
+                        "Assets/images/MovieCo.png",
+                        width: 130,
+                        height: 29,
                       )
                     ],
                   ),
-                ),
-              )),
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.search_rounded),
+                    color: _colorApp.primaryCol,
+                    splashColor: const Color.fromARGB(255, 255, 255, 201),
+                    style: ButtonStyle(
+                        backgroundColor:
+                            WidgetStatePropertyAll(_colorApp.tertiaryCol)),
+                  )
+                ],
+              ),
+            ),
+          ),
           body: ListView(
             controller: _controller,
             // physics: BouncingScrollPhysics(),
@@ -211,7 +210,16 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ),
                                       ElevatedButton.icon(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    MovieDetail(
+                                                        movieID: snapshot.data!
+                                                            .results[index].id),
+                                              ));
+                                        },
                                         label: Text(
                                           "Detail",
                                           style: _textStyleApp.textL.copyWith(
@@ -328,7 +336,16 @@ class _HomePageState extends State<HomePage> {
                         itemCount: snapshot.data!.results.length,
                         itemBuilder: (context, index) {
                           return CardMovie(
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MovieDetail(
+                                          movieID:
+                                              snapshot.data!.results[index].id),
+                                    ));
+                                print("object 1");
+                              },
                               imgPoster:
                                   "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
                               title: "${snapshot.data!.results[index].title}");
@@ -395,7 +412,16 @@ class _HomePageState extends State<HomePage> {
                         itemCount: snapshot.data!.results.length,
                         itemBuilder: (context, index) {
                           return CardMovie(
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MovieDetail(
+                                          movieID:
+                                              snapshot.data!.results[index].id),
+                                    ));
+                                print("object 2");
+                              },
                               imgPoster:
                                   "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
                               title: "${snapshot.data!.results[index].title}");
@@ -451,12 +477,22 @@ class _HomePageState extends State<HomePage> {
                     return SizedBox(
                       height: 210,
                       child: ListView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: 6),
                         scrollDirection: Axis.horizontal,
                         shrinkWrap: true,
                         itemCount: snapshot.data!.results.length,
                         itemBuilder: (context, index) {
                           return CardMovie(
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MovieDetail(
+                                          movieID:
+                                              snapshot.data!.results[index].id),
+                                    ));
+                                print("object 3");
+                              },
                               imgPoster:
                                   "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
                               title: "${snapshot.data!.results[index].title}");

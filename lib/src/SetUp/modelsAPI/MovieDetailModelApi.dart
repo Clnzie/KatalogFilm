@@ -25,7 +25,7 @@ class MovieDetailApi {
   String? posterPath;
   List<ProductionCompany>? productionCompanies;
   List<ProductionCountry>? productionCountries;
-  DateTime? releaseDate;
+  String? releaseDate;
   int? revenue;
   int? runtime;
   List<SpokenLanguage>? spokenLanguages;
@@ -88,9 +88,7 @@ class MovieDetailApi {
             ? []
             : List<ProductionCountry>.from(json["production_countries"]!
                 .map((x) => ProductionCountry.fromJson(x))),
-        releaseDate: json["release_date"] == null
-            ? null
-            : DateTime.parse(json["release_date"]),
+        releaseDate: json["release_date"],
         revenue: json["revenue"],
         runtime: json["runtime"],
         spokenLanguages: json["spoken_languages"] == null
@@ -127,8 +125,7 @@ class MovieDetailApi {
         "production_countries": productionCountries == null
             ? []
             : List<dynamic>.from(productionCountries!.map((x) => x.toJson())),
-        "release_date":
-            "${releaseDate!.year.toString().padLeft(4, '0')}-${releaseDate!.month.toString().padLeft(2, '0')}-${releaseDate!.day.toString().padLeft(2, '0')}",
+        "release_date": releaseDate,
         "revenue": revenue,
         "runtime": runtime,
         "spoken_languages": spokenLanguages == null
