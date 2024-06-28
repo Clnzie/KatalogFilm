@@ -1,12 +1,18 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:Itil.Co/src/SetUp/MovieAPI.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieCreditsModelApi.dart';
+import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTrailerModelApi.dart';
 import 'package:Itil.Co/src/Utils/color.dart';
 import 'package:Itil.Co/src/Utils/constant.dart';
 import 'package:Itil.Co/src/Utils/typography.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:http/http.dart' as http;
 
 class MovieDetail extends StatefulWidget {
   final int movieID;
@@ -21,18 +27,16 @@ class MovieDetail extends StatefulWidget {
 }
 
 class _MovieDetailState extends State<MovieDetail> {
-  // List<MovieCredits?> _list = [];
+  List<MovieTrailerList> _list = [];
   final ColorApp _colorApp = ColorApp();
   final TextStyleApp _textStyleApp = TextStyleApp();
   final HttpService _httpService = HttpService();
 
-  // Future<void> getData() async {
-  //   try {
-  //     _list = await _httpService.getMovieCredits(widget.movieID.toString());
-  //     setState(() {});
-  //   } catch (e) {
-  //     throw Exception("Erro getdata in detail");
-  //   }
+  // getData() async {
+  //   List<MovieTrailerList?> listMovie =
+  //       await _httpService.getMovieTrailerList(widget.movieID.toString());
+  //   _list = listMovie;
+  // print(listMovie);
   // }
 
   // late final YoutubePlayerController _controller = YoutubePlayerController(
@@ -41,15 +45,35 @@ class _MovieDetailState extends State<MovieDetail> {
   //     autoPlay: false,
   //   ),
   // );
+  Future<void> getMovieTrailerList() async {
+    final String url =
+        "https://api.themoviedb.org/3/movie/${widget.movieID}/videos?api_key=b0b1b7542963befc2f848ce363e5c4ab";
+
+    http.Response response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseDecode = jsonDecode(response.body);
+      final List<dynamic> responseData = responseDecode["results"];
+      // print("asdasda ${responseData} asdasdas");
+      setState(() {
+        _list = responseData.map((e) => MovieTrailerList.fromJson(e)).toList();
+      });
+    } else {
+      throw Exception("Error to load Data");
+    }
+  }
 
   @override
   void initState() {
+    getMovieTrailerList();
+    // _httpService.getMovieTrailerList(widget.movieID.toString());
     // getData();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    // getData();
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.black,
@@ -67,32 +91,44 @@ class _MovieDetailState extends State<MovieDetail> {
                 children: [
                   ListView(
                     children: [
-                      Container(
-                        width: double.infinity,
-                        height: MediaQuery.of(context).size.height / 1.40,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                filterQuality: FilterQuality.high,
-                                fit: BoxFit.fill,
-                                image: NetworkImage(
-                                    "${Constants.imagePath}${snapshot.data!.posterPath}"))),
-                        child: Transform.translate(
-                          offset: Offset(0, 20),
-                          child: Container(
+                      CachedNetworkImage(
+                        imageUrl:
+                            "${Constants.imagePath}${snapshot.data!.posterPath}",
+                        imageBuilder: (context, imageProvider) {
+                          return Container(
                             width: double.infinity,
                             height: MediaQuery.of(context).size.height / 1.40,
                             decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                    colors: [
-                                      _colorApp.primaryCol.withOpacity(0),
-                                      _colorApp.primaryCol
-                                    ],
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    stops: [0.5, 0.95])),
-                          ),
+                                image: DecorationImage(
+                                    filterQuality: FilterQuality.high,
+                                    fit: BoxFit.fill,
+                                    image: imageProvider)),
+                            child: Transform.translate(
+                              offset: Offset(0, 20),
+                              child: Container(
+                                width: double.infinity,
+                                height:
+                                    MediaQuery.of(context).size.height / 1.40,
+                                decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                        colors: [
+                                          _colorApp.primaryCol.withOpacity(0),
+                                          _colorApp.primaryCol
+                                        ],
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        stops: [0.5, 0.95])),
+                              ),
+                            ),
+                          );
+                        },
+                        errorWidget: (context, url, error) => Icon(
+                          Icons.error_outline_rounded,
+                          size: 24,
+                          color: Colors.red,
                         ),
                       ),
+
                       // Image(
                       //   image: NetworkImage(
                       //       "${Constants.imagePath}${snapshot.data!.posterPath}"),
@@ -280,13 +316,85 @@ class _MovieDetailState extends State<MovieDetail> {
                                 ),
                               ),
                             ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12.0),
+                              child: Text(
+                                "Cast",
+                                style: _textStyleApp.subHead1
+                                    .copyWith(color: _colorApp.textCol2),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 12,
+                            ),
                             FutureBuilder(
                               future: _httpService
                                   .getMovieCredits(widget.movieID.toString()),
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return CircularProgressIndicator();
+                                  return SizedBox(
+                                    height: 180,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 6),
+                                      shrinkWrap: true,
+                                      itemCount: 5,
+                                      itemBuilder: (context, index) {
+                                        return Shimmer.fromColors(
+                                          baseColor: _colorApp.baseColShimmer,
+                                          highlightColor:
+                                              _colorApp.highlightColShimmer,
+                                          child: Container(
+                                            margin: EdgeInsets.symmetric(
+                                                horizontal: 5),
+                                            width: 100,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: 100,
+                                                  height: 100,
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              15)),
+                                                ),
+                                                SizedBox(
+                                                  height: 6,
+                                                ),
+                                                Container(
+                                                  width: double.infinity,
+                                                  height: 15,
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              50)),
+                                                ),
+                                                SizedBox(
+                                                  height: 6,
+                                                ),
+                                                Container(
+                                                  width: 80,
+                                                  height: 15,
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              50)),
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
                                 } else if (snapshot.hasError) {
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -299,7 +407,7 @@ class _MovieDetailState extends State<MovieDetail> {
                                   );
                                 } else {
                                   return SizedBox(
-                                    height: 165,
+                                    height: 185,
                                     child: ListView.builder(
                                       padding:
                                           EdgeInsets.symmetric(horizontal: 2),
@@ -307,50 +415,154 @@ class _MovieDetailState extends State<MovieDetail> {
                                       shrinkWrap: true,
                                       itemCount: snapshot.data!.cast?.length,
                                       itemBuilder: (context, index) {
-                                        return Container(
-                                          margin: EdgeInsets.symmetric(
-                                              horizontal: 10),
-                                          width: 100,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                width: 100,
-                                                height: 100,
-                                                decoration: BoxDecoration(
+                                        if (snapshot.data!.cast?[index]
+                                                .profilePath ==
+                                            null) {
+                                          return Container(
+                                            margin: EdgeInsets.only(left: 10),
+                                            width: 100,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: 100,
+                                                  height: 100,
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        _colorApp.secondaryCol,
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             15),
-                                                    image: DecorationImage(
-                                                        filterQuality:
-                                                            FilterQuality.high,
-                                                        fit: BoxFit.cover,
-                                                        image: NetworkImage(
-                                                            "${Constants.imagePath}" +
-                                                                "${snapshot.data!.cast?[index].profilePath}"))),
-                                              ),
-                                              SizedBox(
-                                                height: 6,
-                                              ),
-                                              Text(
-                                                "${snapshot.data!.cast?[index].name}",
-                                                style: _textStyleApp.textL
-                                                    .copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                  color: _colorApp.textCol2,
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .error_outline_rounded,
+                                                        size: 20,
+                                                        color: Colors.white,
+                                                      ),
+                                                      SizedBox(
+                                                        height: 4,
+                                                      ),
+                                                      Text(
+                                                        "Image Not Found:(",
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: _textStyleApp
+                                                            .textS
+                                                            .copyWith(
+                                                                fontSize: 8,
+                                                                color: Colors
+                                                                    .white),
+                                                      )
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                              Text(
-                                                "${snapshot.data!.cast?[index].character}",
-                                                style: _textStyleApp.textS
-                                                    .copyWith(
-                                                  color: _colorApp.textCol2,
+                                                SizedBox(
+                                                  height: 6,
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
+                                                Text(
+                                                  "${snapshot.data!.cast?[index].name}",
+                                                  style: _textStyleApp.textL
+                                                      .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: _colorApp
+                                                              .textCol2),
+                                                ),
+                                                SizedBox(
+                                                  height: 6,
+                                                ),
+                                                Text(
+                                                  "${snapshot.data!.cast?[index].character}",
+                                                  style: _textStyleApp.textS
+                                                      .copyWith(
+                                                    color: _colorApp.textCol2,
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          );
+                                        } else {
+                                          return Container(
+                                            margin: EdgeInsets.only(left: 10),
+                                            width: 100,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                CachedNetworkImage(
+                                                  imageUrl:
+                                                      "${Constants.imagePath}${snapshot.data!.cast?[index].profilePath}",
+                                                  imageBuilder:
+                                                      (context, imageProvider) {
+                                                    return Container(
+                                                      width: 100,
+                                                      height: 100,
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(15),
+                                                          image: DecorationImage(
+                                                              filterQuality:
+                                                                  FilterQuality
+                                                                      .high,
+                                                              fit: BoxFit.cover,
+                                                              image:
+                                                                  imageProvider)),
+                                                    );
+                                                  },
+                                                  errorWidget: (context, url,
+                                                          error) =>
+                                                      Icon(Icons
+                                                          .error_outline_rounded),
+                                                  placeholder: (context, url) =>
+                                                      Shimmer.fromColors(
+                                                    baseColor: _colorApp
+                                                        .baseColShimmer,
+                                                    highlightColor: _colorApp
+                                                        .highlightColShimmer,
+                                                    child: Container(
+                                                      width: 100,
+                                                      height: 100,
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(15),
+                                                          color: Colors.red),
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  height: 6,
+                                                ),
+                                                Text(
+                                                  "${snapshot.data!.cast?[index].name}",
+                                                  style: _textStyleApp.textL
+                                                      .copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: _colorApp.textCol2,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  "${snapshot.data!.cast?[index].character}",
+                                                  style: _textStyleApp.textS
+                                                      .copyWith(
+                                                    color: _colorApp.textCol2,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }
                                       },
                                     ),
                                   );
@@ -360,6 +572,91 @@ class _MovieDetailState extends State<MovieDetail> {
                             SizedBox(
                               height: 12,
                             ),
+                            // ListView.builder(
+                            //   shrinkWrap: true,
+                            //   itemCount: 1,
+                            //   itemBuilder: (context, index) {
+                            //     var data = _list[index];
+                            //     return TextButton(
+                            //         onPressed: () {
+                            //           launchUrl(Uri.parse(
+                            //               "https://www.youtube.com/watch?v=${data.key}"));
+                            //         },
+                            //         child: Text(
+                            //           data.key.toString(),
+                            //           style: _textStyleApp.subHead3
+                            //               .copyWith(color: _colorApp.textCol2),
+                            //         ));
+                            //   },
+                            // ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12.0),
+                              child: Text(
+                                "Trailer",
+                                style: _textStyleApp.subHead3
+                                    .copyWith(color: _colorApp.textCol2),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 12,
+                            ),
+                            InkWell(
+                              onTap: () {
+                                launchUrl(Uri.parse(
+                                    "https://www.youtube.com/watch?v=${_list[1].key}"));
+                              },
+                              child: Container(
+                                margin: EdgeInsets.symmetric(horizontal: 12),
+                                width: double.infinity,
+                                height: 187,
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(15),
+                                    image: DecorationImage(
+                                        fit: BoxFit.fill,
+                                        filterQuality: FilterQuality.high,
+                                        image: NetworkImage(
+                                            "${Constants.imagePath}${snapshot.data!.backdropPath}"))),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 24,
+                            ),
+                            // FutureBuilder(
+                            //   future: _httpService
+                            //       .getMovieTrailer(widget.movieID.toString()),
+                            //   builder: (context, snapshot) {
+                            //     if (snapshot.connectionState ==
+                            //         ConnectionState.waiting) {
+                            //       return CircularProgressIndicator();
+                            //     } else if (snapshot.hasError) {
+                            //       return Text(
+                            //         "${snapshot.error}",
+                            //         style: _textStyleApp.subHead3
+                            //             .copyWith(color: _colorApp.textCol2),
+                            //       );
+                            //     } else {
+                            //       return Container(
+                            //         margin:
+                            //             EdgeInsets.symmetric(horizontal: 12),
+                            //         width: double.infinity,
+                            //         height: 187,
+                            //         decoration: BoxDecoration(
+                            //           color: Colors.white,
+                            //           borderRadius: BorderRadius.circular(15),
+                            //         ),
+                            //         child: TextButton(
+                            //             onPressed: () {
+                            //               // Link();
+                            //               launchUrl(Uri.parse(
+                            //                   "https://www.youtube.com/watch?v=${snapshot.data!.results[1].key}"));
+                            //             },
+                            //             child: Text("Example Link Treailer")),
+                            //       );
+                            //     }
+                            //   },
+                            // ),
                           ],
                         ),
                       )

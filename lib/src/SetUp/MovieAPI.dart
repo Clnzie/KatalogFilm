@@ -75,20 +75,39 @@ class HttpService {
     }
   }
 
-  // Future<List<MovieCredits?>> getMovieCredits(String movieID) async {
-  //   final String uri =
-  //       "https://api.themoviedb.org/3/movie/$movieID/credits?api_key=$apiKey";
+  Future<List<MovieTrailerList?>> getMovieTrailerList(String movieID) async {
+    final String url =
+        "https://api.themoviedb.org/3/movie/$movieID/videos?api_key=$apiKey";
 
-  //   http.Response response = await http.get(Uri.parse(uri));
+    http.Response response = await http.get(Uri.parse(url));
 
-  //   if (response.statusCode == 200) {
-  //     final decodeData = jsonDecode(response.body);
-  //     final respon = decodeData['cast'];
-  //     return respon.map((e) => MovieCredits?.fromJson(e)).toList();
-  //   } else {
-  //     throw Exception("Failed to get data");
-  //   }
-  // }
+    if (response.statusCode == 200) {
+      final responseDecode = jsonDecode(response.body) as Map<String, dynamic>;
+      final responseData = responseDecode["results"] as List;
+      print("asdasda ${responseData} asdasdas");
+      return responseData.map((kkk) => MovieTrailerList.fromJson(kkk)).toList();
+    } else {
+      throw Exception("Error to load Data");
+    }
+  }
+
+  Future<MovieTrailer> getMovieTrailer(String movieID) async {
+    final String uri =
+        "https://api.themoviedb.org/3/movie/$movieID/videos?api_key=$apiKey";
+
+    http.Response response = await http.get(Uri.parse(uri));
+
+    if (response.statusCode == 200) {
+      // final decodeData = jsonDecode(response.body);
+      // final respon = decodeData['cast'];
+      // return respon.map((e) => MovieCredits?.fromJson(e)).toList();
+      return MovieTrailer.fromJson(jsonDecode(response.body));
+    }
+
+    var responResult = jsonDecode(response.body);
+
+    return responResult;
+  }
 
   Future<MovieCredits> getMovieCredits(String movieID) async {
     final String uri =
@@ -97,7 +116,8 @@ class HttpService {
     http.Response response = await http.get(Uri.parse(uri));
 
     if (response.statusCode == 200) {
-      return MovieCredits.fromJson(jsonDecode(response.body));
+      return MovieCredits.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>);
     }
 
     var responRetrun = jsonDecode(response.body);
