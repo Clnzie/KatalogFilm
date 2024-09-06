@@ -7,7 +7,6 @@ import 'package:Itil.Co/src/pages/core/homepage.dart';
 import 'package:Itil.Co/src/pages/core/movie_detail.dart';
 import 'package:Itil.Co/src/widgets/card_movie.dart';
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
 
 class ViewAllToprate extends StatefulWidget {
   const ViewAllToprate({super.key});
@@ -20,13 +19,40 @@ class _ViewAllToprateState extends State<ViewAllToprate> {
   final ColorApp _colorApp = ColorApp();
   final TextStyleApp _textStyleApp = TextStyleApp();
   final HttpService httpService = HttpService();
-  late Future<MovieTopRated> movieTopRate;
+  final List<MovieTopRatedList> _movieListApi = [];
+  final ScrollController scrollController = ScrollController();
+  int currentPage = 1;
+  bool isLoading = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    movieTopRate = httpService.getMovieTopRate();
+    _paginationMovie();
+    scrollController.addListener(() {
+      if (scrollController.position.pixels ==
+          scrollController.position.maxScrollExtent) {
+        _paginationMovie();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  _paginationMovie() async {
+    setState(() {
+      isLoading = true;
+    });
+    List<MovieTopRatedList> newListApi =
+        await httpService.getMovieTopRatedList(currentPage);
+    setState(() {
+      isLoading = false;
+      _movieListApi.addAll(newListApi);
+      currentPage++;
+    });
   }
 
   @override
@@ -66,42 +92,39 @@ class _ViewAllToprateState extends State<ViewAllToprate> {
             )),
         backgroundColor: Color(0xff171717),
         body: ListView(
-          physics: BouncingScrollPhysics(),
+          controller: scrollController,
           children: [
-            FutureBuilder<MovieTopRated>(
-              future: movieTopRate,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Text("${snapshot.error}");
-                } else {
-                  return GridView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    shrinkWrap: true,
-                    itemCount: snapshot.data!.results.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      mainAxisExtent: 171,
-                      mainAxisSpacing: 6,
-                      // crossAxisSpacing: 0,
-                    ),
-                    itemBuilder: (context, index) {
-                      return CardMovie(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MovieDetail(
-                                    movieID: snapshot.data!.results[index].id,
-                                  ),
-                                ));
-                          },
-                          imgPoster:
-                              "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
-                          title: "${snapshot.data!.results[index].title}");
+            GridView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              shrinkWrap: true,
+              itemCount:
+                  isLoading ? _movieListApi.length + 1 : _movieListApi.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisExtent: 210,
+                mainAxisSpacing: 6,
+                // crossAxisSpacing: 0,
+              ),
+              itemBuilder: (context, index) {
+                if (index < _movieListApi.length) {
+                  MovieTopRatedList data = _movieListApi[index];
+                  return CardMovie(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MovieDetail(
+                              movieID: data.id ?? 0,
+                            ),
+                          ));
                     },
+                    imgPoster: "${Constants.imagePath}${data.posterPath}",
+                    title: "${data.title}",
+                  );
+                } else {
+                  return Center(
+                    child: CircularProgressIndicator(),
                   );
                 }
               },
@@ -115,3 +138,59 @@ class _ViewAllToprateState extends State<ViewAllToprate> {
     );
   }
 }
+
+// FutureBuilder<MovieTopRated>(
+//               future: movieTopRate,
+//               builder: (context, snapshot) {
+//                 if (snapshot.connectionState == ConnectionState.waiting) {
+//                   return GridView.builder(
+//                     physics: NeverScrollableScrollPhysics(),
+//                     padding: EdgeInsets.symmetric(horizontal: 8),
+//                     shrinkWrap: true,
+//                     itemCount: 20,
+//                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//                       crossAxisCount: 3,
+//                       mainAxisExtent: 210,
+//                       mainAxisSpacing: 6,
+//                       // crossAxisSpacing: 0,
+//                     ),
+//                     itemBuilder: (context, index) {
+//                       return Padding(
+//                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
+//                         child: ShimmerCard(),
+//                       );
+//                     },
+//                   );
+//                 } else if (snapshot.hasError) {
+//                   return Text("${snapshot.error}");
+//                 } else {
+//                   return GridView.builder(
+//                     physics: NeverScrollableScrollPhysics(),
+//                     padding: EdgeInsets.symmetric(horizontal: 8),
+//                     shrinkWrap: true,
+//                     itemCount: snapshot.data!.results.length,
+//                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//                       crossAxisCount: 3,
+//                       mainAxisExtent: 210,
+//                       mainAxisSpacing: 6,
+//                       // crossAxisSpacing: 0,
+//                     ),
+//                     itemBuilder: (context, index) {
+//                       return CardMovie(
+//                           onTap: () {
+//                             Navigator.push(
+//                                 context,
+//                                 MaterialPageRoute(
+//                                   builder: (context) => MovieDetail(
+//                                     movieID: snapshot.data!.results[index].id,
+//                                   ),
+//                                 ));
+//                           },
+//                           imgPoster:
+//                               "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
+//                           title: "${snapshot.data!.results[index].title}");
+//                     },
+//                   );
+//                 }
+//               },
+//             )

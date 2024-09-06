@@ -1,5 +1,4 @@
 import 'package:Itil.Co/src/Utils/color.dart';
-import 'package:Itil.Co/src/Utils/typography.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 

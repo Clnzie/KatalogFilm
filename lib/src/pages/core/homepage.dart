@@ -2,13 +2,14 @@ import 'dart:io';
 
 import 'package:Itil.Co/src/SetUp/MovieAPI.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieModelApi.dart';
-import 'package:Itil.Co/src/SetUp/modelsAPI/MovieNowPlaying.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTopRateModelApi.dart';
 import 'package:Itil.Co/src/Utils/color.dart';
 import 'package:Itil.Co/src/Utils/constant.dart';
 import 'package:Itil.Co/src/Utils/typography.dart';
 import 'package:Itil.Co/src/component/button.dart';
 import 'package:Itil.Co/src/pages/core/movie_detail.dart';
+import 'package:Itil.Co/src/pages/search/search_page.dart';
+import 'package:Itil.Co/src/pages/view-all/view_all_nowplaying.dart';
 import 'package:Itil.Co/src/pages/view-all/view_all_popular.dart';
 import 'package:Itil.Co/src/pages/view-all/view_all_topRate.dart';
 import 'package:Itil.Co/src/widgets/card_movie.dart';
@@ -18,7 +19,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hidable/hidable.dart';
-import 'package:http/retry.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -33,21 +33,54 @@ class _HomePageState extends State<HomePage> {
   final ColorApp _colorApp = ColorApp();
   final TextStyleApp _textStyleApp = TextStyleApp();
   final HttpService httpService = HttpService();
-  late Future<Movie> movie;
-  late Future<MovieTopRated> movieTopRate;
-  late Future<MovieNowPlaying> movieNowPlaying;
+  late Future<MoviePopular> movie;
+  late Future<Map<String, dynamic>> movieNowPlaying;
+  late Future<List<MovieTopRatedList>> movieTopRatedList;
   ScrollController _controller = ScrollController();
   late FToast fToast;
   int exitCounter = 0;
   DateTime timeBackPress = DateTime.now();
+  int currentPage = 1;
+  late String _minDate;
+  late String _maxDate;
+
+  void _loadatesMovie() async {
+    final dataRespon =
+        await httpService.getMovieNowPlaying(page: 1, minDate: "", maxDate: "");
+
+    setState(() {
+      _minDate = dataRespon['dates']['minimum'];
+      _maxDate = dataRespon['dates']['maximum'];
+      movieNowPlaying = httpService.getMovieNowPlaying(
+          page: currentPage, minDate: _minDate, maxDate: _maxDate);
+    });
+  }
+
+  // Future<void> _handleRefresh() async {
+  //   final Future<MoviePopular> newData_MoviePopular =
+  //       (await httpService.getMoviePopular()) as Future<MoviePopular>;
+  //   final Future<Map<String, dynamic>> newData_MovieNowPlaying =
+  //       (await httpService.getMovieNowPlaying(
+  //           page: 1, minDate: '', maxDate: '')) as Future<Map<String, dynamic>>;
+  //   final Future<List<MovieTopRatedList>> newData_MovieTopRate =
+  //       (await httpService.getMovieTopRate())
+  //           as Future<List<MovieTopRatedList>>;
+
+  //   setState(() {
+  //     movie = newData_MoviePopular;
+  //     movieNowPlaying = newData_MovieNowPlaying;
+  //     movieTopRatedList = newData_MovieTopRate;
+  //   });
+  // }
 
   @override
   void initState() {
     super.initState();
-    httpService.getMovieNowPlaying();
-    movie = httpService.getMovie();
-    movieTopRate = httpService.getMovieTopRate();
-    movieNowPlaying = httpService.getMovieNowPlaying();
+    movie = httpService.getMoviePopular();
+    movieNowPlaying =
+        httpService.getMovieNowPlaying(page: 1, minDate: "", maxDate: "");
+    _loadatesMovie();
+    movieTopRatedList = httpService.getMovieTopRatedList(currentPage);
     fToast = FToast();
     fToast.init(context);
   }
@@ -96,7 +129,13 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SearchPage(),
+                          ));
+                    },
                     icon: Icon(Icons.search_rounded),
                     color: _colorApp.primaryCol,
                     splashColor: const Color.fromARGB(255, 255, 255, 201),
@@ -117,7 +156,7 @@ class _HomePageState extends State<HomePage> {
               ),
 
               //Slider Popular Movie
-              FutureBuilder<Movie>(
+              FutureBuilder<MoviePopular>(
                 future: movie,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -290,6 +329,11 @@ class _HomePageState extends State<HomePage> {
                     TextButton(
                         onPressed: () {
                           print("asd");
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ViewAllNowplaying(),
+                              ));
                         },
                         child: Text(
                           "see all",
@@ -303,7 +347,7 @@ class _HomePageState extends State<HomePage> {
                 height: 14,
               ),
 
-              FutureBuilder<MovieNowPlaying>(
+              FutureBuilder<Map<String, dynamic>>(
                 future: movieNowPlaying,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -314,7 +358,7 @@ class _HomePageState extends State<HomePage> {
                         padding: EdgeInsets.symmetric(horizontal: 6),
                         scrollDirection: Axis.horizontal,
                         shrinkWrap: true,
-                        itemCount: 3,
+                        itemCount: 5,
                         itemBuilder: (context, index) {
                           return Container(
                             margin: EdgeInsets.symmetric(horizontal: 6),
@@ -326,29 +370,33 @@ class _HomePageState extends State<HomePage> {
                     );
                   } else if (snapshot.hasError) {
                     return Text("${snapshot.error}");
+                  } else if (snapshot.data!.isEmpty) {
+                    return Text("Data not found");
                   } else {
+                    var data = snapshot.data!['results'];
                     return SizedBox(
                       height: 210,
                       child: ListView.builder(
                         padding: EdgeInsets.symmetric(horizontal: 6),
                         scrollDirection: Axis.horizontal,
                         shrinkWrap: true,
-                        itemCount: snapshot.data!.results.length,
+                        itemCount: data.length,
                         itemBuilder: (context, index) {
+                          var datas = data[index];
                           return CardMovie(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MovieDetail(
-                                          movieID:
-                                              snapshot.data!.results[index].id),
-                                    ));
-                                print("object 1");
-                              },
-                              imgPoster:
-                                  "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
-                              title: "${snapshot.data!.results[index].title}");
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        MovieDetail(movieID: datas['id']),
+                                  ));
+                              print("object 1");
+                            },
+                            imgPoster:
+                                "${Constants.imagePath}${datas['poster_path']}",
+                            title: "${datas['title']}",
+                          );
                         },
                       ),
                     );
@@ -370,6 +418,11 @@ class _HomePageState extends State<HomePage> {
                     TextButton(
                         onPressed: () {
                           print("asd");
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ViewAllPopular(),
+                              ));
                         },
                         child: Text(
                           "see all",
@@ -379,7 +432,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              FutureBuilder<Movie>(
+              FutureBuilder<MoviePopular>(
                 future: movie,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -412,19 +465,20 @@ class _HomePageState extends State<HomePage> {
                         itemCount: snapshot.data!.results.length,
                         itemBuilder: (context, index) {
                           return CardMovie(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MovieDetail(
-                                          movieID:
-                                              snapshot.data!.results[index].id),
-                                    ));
-                                print("object 2");
-                              },
-                              imgPoster:
-                                  "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
-                              title: "${snapshot.data!.results[index].title}");
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MovieDetail(
+                                        movieID:
+                                            snapshot.data!.results[index].id),
+                                  ));
+                              print("object 2");
+                            },
+                            imgPoster:
+                                "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
+                            title: "${snapshot.data!.results[index].title}",
+                          );
                         },
                       ),
                     );
@@ -442,16 +496,25 @@ class _HomePageState extends State<HomePage> {
                       style: _textStyleApp.subHead3
                           .copyWith(color: _colorApp.textCol2),
                     ),
-                    Text(
-                      "see all",
-                      style: _textStyleApp.textS
-                          .copyWith(color: _colorApp.textCol1),
-                    )
+                    TextButton(
+                        onPressed: () {
+                          print("asd");
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ViewAllToprate(),
+                              ));
+                        },
+                        child: Text(
+                          "see all",
+                          style: _textStyleApp.textS
+                              .copyWith(color: _colorApp.textCol1),
+                        )),
                   ],
                 ),
               ),
-              FutureBuilder<MovieTopRated>(
-                future: movieTopRate,
+              FutureBuilder<List<MovieTopRatedList>>(
+                future: movieTopRatedList,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return SizedBox(
@@ -480,22 +543,22 @@ class _HomePageState extends State<HomePage> {
                         padding: EdgeInsets.symmetric(horizontal: 6),
                         scrollDirection: Axis.horizontal,
                         shrinkWrap: true,
-                        itemCount: snapshot.data!.results.length,
+                        itemCount: snapshot.data!.length,
                         itemBuilder: (context, index) {
                           return CardMovie(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MovieDetail(
-                                          movieID:
-                                              snapshot.data!.results[index].id),
-                                    ));
-                                print("object 3");
-                              },
-                              imgPoster:
-                                  "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
-                              title: "${snapshot.data!.results[index].title}");
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MovieDetail(
+                                        movieID: snapshot.data![index].id ?? 0),
+                                  ));
+                              print("object 3");
+                            },
+                            imgPoster:
+                                "${Constants.imagePath}${snapshot.data![index].posterPath}",
+                            title: "${snapshot.data![index].title}",
+                          );
                         },
                       ),
                     );
@@ -517,10 +580,11 @@ class _HomePageState extends State<HomePage> {
     Widget toast = Container(
       padding: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
       decoration: BoxDecoration(
-          color: _colorApp.textCol2, borderRadius: BorderRadius.circular(12)),
+          color: _colorApp.quartiaryCol,
+          borderRadius: BorderRadius.circular(12)),
       child: Text(
         "Press again to exit",
-        style: TextStyle(fontSize: 16, color: Colors.black),
+        style: _textStyleApp.textL.copyWith(color: _colorApp.textCol3),
       ),
     );
     fToast.showToast(
@@ -569,326 +633,3 @@ String getGenreName(int genreId) {
 
   return genreName;
 }
-
-
-
- 
-
-//               //Popular
-//               Padding(
-//                 padding:
-//                     const EdgeInsets.symmetric(horizontal: 12.0, vertical: 14),
-//                 child: Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: [
-//                     Text(
-//                       "Popular",
-//                       style: _textStyleApp.subHead1.copyWith(
-//                         fontWeight: FontWeight.bold,
-//                         color: _colorApp.textCol2,
-//                       ),
-//                     ),
-//                     TextButton(
-//                         onPressed: () {
-//                           Navigator.push(
-//                               context,
-//                               MaterialPageRoute(
-//                                 builder: (context) => ViewAllPopular(),
-//                               ));
-//                         },
-//                         child: Text(
-//                           "see more >",
-//                           style: _textStyleApp.textL
-//                               .copyWith(color: _colorApp.textCol1),
-//                         ))
-//                   ],
-//                 ),
-//               ),
-
-//               //Movie Populer
-//               FutureBuilder<Movie>(
-//                 future: movie,
-//                 builder: (context, snapshot) {
-//                   if (snapshot.connectionState == ConnectionState.waiting) {
-//                     // return Center(child: CircularProgressIndicator());
-//                     return SizedBox(
-//                       height: 171,
-//                       child: ListView.builder(
-//                         physics: NeverScrollableScrollPhysics(),
-//                         padding: EdgeInsets.symmetric(horizontal: 8),
-//                         scrollDirection: Axis.horizontal,
-//                         shrinkWrap: true,
-//                         itemCount: 4,
-//                         itemBuilder: (context, index) {
-//                           return Shimmer.fromColors(
-//                             baseColor: Color(0xff3a3a3a),
-//                             highlightColor: Color.fromARGB(255, 92, 91, 91),
-//                             child: Container(
-//                               margin: EdgeInsets.symmetric(horizontal: 4),
-//                               width: 115,
-//                               // height: 171,
-//                               decoration: BoxDecoration(
-//                                   color: Color(0xff3a3a3a),
-//                                   borderRadius: BorderRadius.circular(15)),
-//                             ),
-//                           );
-//                         },
-//                       ),
-//                     );
-//                   } else if (snapshot.hasError) {
-//                     return Text("${snapshot.error}");
-//                   } else {
-//                     return SizedBox(
-//                       height: 171,
-//                       child: ListView.builder(
-//                         padding: EdgeInsets.symmetric(horizontal: 8),
-//                         physics: BouncingScrollPhysics(),
-//                         scrollDirection: Axis.horizontal,
-//                         shrinkWrap: true,
-//                         itemCount: snapshot.data!.results.length,
-//                         itemBuilder: (context, index) {
-//                           return CardMovie(
-//                             onTap: () {
-//                               Navigator.push(
-//                                   context,
-//                                   MaterialPageRoute(
-//                                     builder: (context) => MovieDetail(
-//                                       movieID: snapshot.data!.results[index].id,
-//                                     ),
-//                                   ));
-//                             },
-//                             imgPoster:
-//                                 "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
-//                             title: "${snapshot.data!.results[index].title}",
-//                           );
-//                         },
-//                       ),
-//                     );
-//                   }
-//                 },
-//               ),
-
-//               //Trailers
-//               Stack(
-//                 children: [
-//                   Container(
-//                     margin: EdgeInsets.only(top: 14),
-//                     width: double.infinity,
-//                     height: 255,
-//                     decoration: BoxDecoration(
-//                       color: const Color.fromARGB(255, 32, 32, 32),
-//                       // image: DecorationImage(
-//                       //     fit: BoxFit.cover,
-//                       //     filterQuality: FilterQuality.high,
-//                       //     image: AssetImage('lib/Assets/morales.jpeg')),
-//                     ),
-//                   ),
-//                   Container(
-//                     padding: EdgeInsets.symmetric(vertical: 14),
-//                     margin: EdgeInsets.only(top: 14),
-//                     width: double.infinity,
-//                     height: 255,
-//                     color: Color.fromARGB(129, 0, 0, 0),
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       children: [
-//                         Padding(
-//                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
-//                           child: Text(
-//                             "Trailers",
-//                             style: _textStyleApp.subHead1.copyWith(
-//                                 fontWeight: FontWeight.bold,
-//                                 color: _colorApp.textCol2),
-//                           ),
-//                         ),
-
-//                         //Video Trailers
-//                         FutureBuilder<Movie>(
-//                           future: movie,
-//                           builder: (context, snapshot) {
-//                             if (snapshot.connectionState ==
-//                                 ConnectionState.waiting) {
-//                               //Shimmer Trailers
-//                               return SizedBox(
-//                                 height: 190,
-//                                 child: ListView.builder(
-//                                   padding: EdgeInsets.symmetric(horizontal: 8),
-//                                   physics: NeverScrollableScrollPhysics(),
-//                                   scrollDirection: Axis.horizontal,
-//                                   shrinkWrap: true,
-//                                   itemCount: 4,
-//                                   itemBuilder: (context, index) {
-//                                     return Shimmer.fromColors(
-//                                         baseColor: Color(0xff3a3a3a),
-//                                         highlightColor:
-//                                             Color.fromARGB(255, 92, 91, 91),
-//                                         child: Container(
-//                                           margin: EdgeInsets.symmetric(
-//                                               horizontal: 4),
-//                                           width: 290,
-//                                           decoration: BoxDecoration(
-//                                               color: Color(0xff3a3a3a),
-//                                               borderRadius:
-//                                                   BorderRadius.circular(15)),
-//                                         ));
-//                                   },
-//                                 ),
-//                               );
-//                             } else if (snapshot.hasError) {
-//                               return Text("${snapshot.error}");
-//                             } else {
-//                               return SizedBox(
-//                                 height: 190,
-//                                 child: ListView.builder(
-//                                   padding: EdgeInsets.symmetric(horizontal: 8),
-//                                   scrollDirection: Axis.horizontal,
-//                                   physics: BouncingScrollPhysics(),
-//                                   shrinkWrap: true,
-//                                   itemCount: 6,
-//                                   itemBuilder: (context, index) {
-//                                     return CachedNetworkImage(
-//                                       imageUrl:
-//                                           "${Constants.imagePath}${snapshot.data!.results[index].backdropPath}",
-//                                       imageBuilder: (context, imageProvider) {
-//                                         return Container(
-//                                           margin: EdgeInsets.symmetric(
-//                                               horizontal: 4),
-//                                           // height: 159,
-//                                           width: 290,
-//                                           decoration: BoxDecoration(
-//                                               // color: Color.fromARGB(
-//                                               //     185, 24, 24, 24),
-//                                               borderRadius:
-//                                                   BorderRadius.circular(15),
-//                                               image: DecorationImage(
-//                                                   fit: BoxFit.fitHeight,
-//                                                   filterQuality:
-//                                                       FilterQuality.high,
-//                                                   image: imageProvider)),
-//                                         );
-//                                       },
-//                                       placeholder: (context, url) =>
-//                                           Shimmer.fromColors(
-//                                         baseColor: Color(0xff3a3a3a),
-//                                         highlightColor:
-//                                             Color.fromARGB(255, 92, 91, 91),
-//                                         child: Container(
-//                                           margin: EdgeInsets.symmetric(
-//                                               horizontal: 4),
-//                                           width: 290,
-//                                           decoration: BoxDecoration(
-//                                               color: Color(0xff3a3a3a),
-//                                               borderRadius:
-//                                                   BorderRadius.circular(15)),
-//                                         ),
-//                                       ),
-//                                     );
-//                                   },
-//                                 ),
-//                               );
-//                             }
-//                           },
-//                         )
-//                       ],
-//                     ),
-//                   ),
-//                 ],
-//               ),
-
-//               //Top Rated
-//               Padding(
-//                 padding:
-//                     const EdgeInsets.symmetric(horizontal: 12.0, vertical: 14),
-//                 child: Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: [
-//                     Text(
-//                       "Top Rated",
-//                       style: _textStyleApp.subHead1.copyWith(
-//                           fontWeight: FontWeight.bold,
-//                           color: _colorApp.textCol2),
-//                     ),
-//                     TextButton(
-//                         onPressed: () {
-//                           Navigator.push(
-//                               context,
-//                               MaterialPageRoute(
-//                                 builder: (context) => ViewAllToprate(),
-//                               ));
-//                         },
-//                         child: Text(
-//                           "see more >",
-//                           style: _textStyleApp.textL
-//                               .copyWith(color: _colorApp.textCol1),
-//                         ))
-//                   ],
-//                 ),
-//               ),
-
-//               // Movie Top Rated
-//               FutureBuilder<MovieTopRated>(
-//                 future: movieTopRate,
-//                 builder: (context, snapshot) {
-//                   if (snapshot.connectionState == ConnectionState.waiting) {
-//                     // return Center(child: CircularProgressIndicator());
-//                     return SizedBox(
-//                       height: 171,
-//                       child: ListView.builder(
-//                         physics: NeverScrollableScrollPhysics(),
-//                         padding: EdgeInsets.symmetric(horizontal: 8),
-//                         scrollDirection: Axis.horizontal,
-//                         shrinkWrap: true,
-//                         itemCount: 4,
-//                         itemBuilder: (context, index) {
-//                           return Shimmer.fromColors(
-//                             baseColor: Color(0xff3a3a3a),
-//                             highlightColor: Color.fromARGB(255, 92, 91, 91),
-//                             child: Container(
-//                               margin: EdgeInsets.symmetric(horizontal: 4),
-//                               width: 115,
-//                               // height: 171,
-//                               decoration: BoxDecoration(
-//                                   color: Color(0xff3a3a3a),
-//                                   borderRadius: BorderRadius.circular(15)),
-//                             ),
-//                           );
-//                         },
-//                       ),
-//                     );
-//                   } else if (snapshot.hasError) {
-//                     return Text("${snapshot.error}");
-//                   } else {
-//                     return SizedBox(
-//                       height: 171,
-//                       child: ListView.builder(
-//                         padding: EdgeInsets.symmetric(horizontal: 8),
-//                         physics: BouncingScrollPhysics(),
-//                         scrollDirection: Axis.horizontal,
-//                         shrinkWrap: true,
-//                         itemCount: snapshot.data!.results.length,
-//                         itemBuilder: (context, index) {
-//                           return CardMovie(
-//                             onTap: () {
-//                               Navigator.push(
-//                                   context,
-//                                   MaterialPageRoute(
-//                                     builder: (context) => MovieDetail(
-//                                       movieID: snapshot.data!.results[index].id,
-//                                     ),
-//                                   ));
-//                             },
-//                             imgPoster:
-//                                 "${Constants.imagePath}${snapshot.data!.results[index].posterPath}",
-//                             title: "${snapshot.data!.results[index].title}",
-//                           );
-//                         },
-//                       ),
-//                     );
-//                   }
-//                 },
-//               ),
-
-//               SizedBox(
-//                 height: 14,
-//               ),

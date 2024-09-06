@@ -1,28 +1,46 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieCreditsModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieDetailModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieNowPlaying.dart';
-import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTrailerModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieModelApi.dart';
+import 'package:Itil.Co/src/SetUp/modelsAPI/MovieSearchModelApi.dart';
 import 'package:Itil.Co/src/SetUp/modelsAPI/MovieTopRateModelApi.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class HttpService {
   final String apiKey = "b0b1b7542963befc2f848ce363e5c4ab";
 
-  Future<Movie> getMovie() async {
+  Future<MoviePopular> getMoviePopular() async {
     final String uri =
         "https://api.themoviedb.org/3/movie/popular?api_key=$apiKey";
 
     http.Response response = await http.get(Uri.parse(uri));
 
     if (response.statusCode == 200) {
-      return Movie.fromJson(jsonDecode(response.body));
+      return MoviePopular.fromJson(jsonDecode(response.body));
     }
 
     var responseReturn = jsonDecode(response.body);
 
     return responseReturn;
+  }
+
+  Future<List<MoviePopularList>> getMoviePopularList(int page) async {
+    final String uri =
+        "https://api.themoviedb.org/3/movie/popular?api_key=$apiKey&page=$page";
+
+    http.Response response = await http.get(Uri.parse(uri));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responDecode = jsonDecode(response.body);
+      final List<dynamic> responJson = responDecode["results"];
+      return responJson.map((e) => MoviePopularList.fromJson(e)).toList();
+    } else {
+      print("asad");
+      throw Exception("Error get List API");
+    }
   }
 
   Future<MovieTopRated> getMovieTopRate() async {
@@ -40,6 +58,66 @@ class HttpService {
     return responseReturn;
   }
 
+  Future<List<MovieTopRatedList>> getMovieTopRatedList(int page) async {
+    final String uri =
+        "https://api.themoviedb.org/3/movie/top_rated?api_key=$apiKey&page=$page";
+
+    http.Response response = await http.get(Uri.parse(uri));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responDecode = jsonDecode(response.body);
+      final List<dynamic> responJson = responDecode["results"];
+      return responJson.map((e) => MovieTopRatedList.fromJson(e)).toList();
+    } else {
+      print("asad");
+      throw Exception("Error get List API");
+    }
+  }
+
+  Future<Map<String, dynamic>> getMovieNowPlaying({
+    required int page,
+    required String minDate,
+    required String maxDate,
+  }) async {
+    try {
+      final String uri =
+          "https://api.themoviedb.org/3/movie/now_playing?api_key=$apiKey&page=$page&release_date.gte=$minDate&release_date.lte=$maxDate";
+
+      http.Response response = await http.get(Uri.parse(uri));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonRespon = jsonDecode(response.body);
+        return jsonRespon;
+      } else {
+        throw Exception("error ro get api Now Playing Movie");
+      }
+
+      // var responeReturn = jsonDecode(response.body);
+
+      // return responeReturn;
+    } catch (e) {
+      throw Exception("error API");
+    }
+  }
+
+  Future<List<MovieNowPlayingList>> getMovieNowPlayingList({
+    required int page,
+  }) async {
+    final String uri =
+        "https://api.themoviedb.org/3/movie/now_playing?api_key=$apiKey&page=$page";
+
+    http.Response response = await http.get(Uri.parse(uri));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responDecode = jsonDecode(response.body);
+      final List<dynamic> responJson = responDecode["results"];
+      return responJson.map((e) => MovieNowPlayingList.fromJson(e)).toList();
+    } else {
+      print("asad");
+      throw Exception("Error get List API");
+    }
+  }
+
   Future<MovieDetailApi> getDetailMovie(String id) async {
     final String uri = "https://api.themoviedb.org/3/movie/$id?api_key=$apiKey";
 
@@ -47,66 +125,12 @@ class HttpService {
 
     if (response.statusCode == 200) {
       print("Succes Get API");
-      // final jsonResponse = jsonDecode(response.body) as List;
-      // return jsonResponse.map((e) => MovieDetailApi?.fromJson(e)).toList();
+
       return MovieDetailApi.fromJson(jsonDecode(response.body));
     }
     var responseReturn = jsonDecode(response.body);
 
     return responseReturn;
-  }
-
-  Future<MovieNowPlaying> getMovieNowPlaying() async {
-    try {
-      final String uri =
-          "https://api.themoviedb.org/3/movie/now_playing?api_key=$apiKey";
-
-      http.Response response = await http.get(Uri.parse(uri));
-
-      if (response.statusCode == 200) {
-        return MovieNowPlaying.fromJson(jsonDecode(response.body));
-      }
-
-      var responeReturn = jsonDecode(response.body);
-
-      return responeReturn;
-    } catch (e) {
-      throw Exception("error API");
-    }
-  }
-
-  Future<List<MovieTrailerList?>> getMovieTrailerList(String movieID) async {
-    final String url =
-        "https://api.themoviedb.org/3/movie/$movieID/videos?api_key=$apiKey";
-
-    http.Response response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final responseDecode = jsonDecode(response.body) as Map<String, dynamic>;
-      final responseData = responseDecode["results"] as List;
-      print("asdasda ${responseData} asdasdas");
-      return responseData.map((kkk) => MovieTrailerList.fromJson(kkk)).toList();
-    } else {
-      throw Exception("Error to load Data");
-    }
-  }
-
-  Future<MovieTrailer> getMovieTrailer(String movieID) async {
-    final String uri =
-        "https://api.themoviedb.org/3/movie/$movieID/videos?api_key=$apiKey";
-
-    http.Response response = await http.get(Uri.parse(uri));
-
-    if (response.statusCode == 200) {
-      // final decodeData = jsonDecode(response.body);
-      // final respon = decodeData['cast'];
-      // return respon.map((e) => MovieCredits?.fromJson(e)).toList();
-      return MovieTrailer.fromJson(jsonDecode(response.body));
-    }
-
-    var responResult = jsonDecode(response.body);
-
-    return responResult;
   }
 
   Future<MovieCredits> getMovieCredits(String movieID) async {
@@ -124,79 +148,21 @@ class HttpService {
 
     return responRetrun;
   }
+
+  Future<List<MovieSearch>> fetchSearch(String query, int page) async {
+    final String uri =
+        "https://api.themoviedb.org/3/search/movie?api_key=$apiKey&query=$query&page=$page";
+
+    http.Response response = await http.get(Uri.parse(uri));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseDecode = jsonDecode(response.body);
+      final List<dynamic> responseResult = responseDecode['results'];
+      final assd = responseResult.map((e) => MovieSearch.fromJson(e)).toList();
+      return assd;
+    } else {
+      // throw MessageProperty("error", "Error to get data");
+      throw Exception("error to get data!!");
+    }
+  }
 }
-
-// Future<MovieTrailer> getTrailers(String movieId) async {
-//   const apiKey = 'b0b1b7542963befc2f848ce363e5c4ab';
-//   final url = Uri.parse(
-//       'https://api.themoviedb.org/3/movie/$movieId/trailers?api_key=$apiKey');
-
-//   final response = await http.get(url);
-
-//   if (response.statusCode == 200) {
-//     return MovieTrailer.fromJson(jsonDecode(response.body)['result']);
-//   }
-
-//   var responseReturn = jsonDecode(response.body)['results'];
-
-//   return responseReturn;
-// }
-
-// Future<List<MovieTrailer>> getTrailers(String movieId) async {
-//   const apiKey = 'b0b1b7542963befc2f848ce363e5c4ab';
-//   final url = Uri.parse(
-//       'https://api.themoviedb.org/3/movie/$movieId/trailers?api_key=$apiKey');
-//   final response = await http.get(url);
-//   final data = jsonDecode(response.body);
-//   final trailers = (data['results'] as List)
-//       .map((json) => MovieTrailer.fromJson(json))
-//       .toList();
-//   return trailers;
-// }
-
-// Future<void> _fetchTrailer() async {
-//   final String apiKey = "b0b1b7542963befc2f848ce363e5c4ab";
-//   final String baseURL =
-//       "https://api.themoviedb.org/3/movie/${widget.movieID}/videos?api_key=";
-
-//   final uri = baseURL + apiKey;
-
-//   http.Response response = await http.get(Uri.parse(uri));
-
-//   if (response.statusCode == 200) {
-//     final Map<String, dynamic> data = json.decode(response.body);
-//     final List<dynamic> results = data['results'];
-//     if (results.isNotEmpty) {
-//       final String trailerKey = results[0]['key'];
-//       final videoUrl = 'https://www.youtube.com/watch?v=$trailerKey';
-//       _controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-//       await Future.wait(_controller.initialize());
-//     }
-//   } else {
-//     throw Exception('Failed to load trailers');
-//   }
-// }
-
-// class HttpService {
-//   final String apiKey = "b0b1b7542963befc2f848ce363e5c4ab";
-//   final String baseUrl = "https://api.themoviedb.org/3/movie/popular?api_key=";
-
-//   Future<Movie?> getPopular() async {
-//     final String uri = baseUrl + apiKey;
-
-//     http.Response result = await http.get(Uri.parse(uri));
-//     if (result.statusCode == HttpStatus.ok) {
-//       final decodeData = json.decode(result.body)["results"];
-//       print(decodeData);
-//       return decodeData.map((movie) => Movie.fromJson(movie)).toList();
-//       // final jsonResponse = json.decode(result.body);
-//       // final moviesMap = jsonResponse['result'] as List;
-//       // List movies = moviesMap.map((movie) => Movie.fromJson(movie)).toList();
-//       // return movies;
-//     } else {
-//       print("gagal");
-//       // throw Exception("Error");
-//       return null;
-//     }
-//   }
-// }

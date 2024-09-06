@@ -11,54 +11,65 @@ class CardMovie extends StatelessWidget {
 
   final Function() onTap;
   final String imgPoster, title;
-  CardMovie(
-      {super.key,
-      required this.onTap,
-      required this.imgPoster,
-      required this.title});
+  CardMovie({
+    super.key,
+    required this.onTap,
+    required this.imgPoster,
+    required this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 6),
         width: 110,
-        child: CachedNetworkImage(
-          imageUrl: imgPoster,
-          imageBuilder: (context, imageProvider) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CachedNetworkImage(
+              imageUrl: imgPoster,
+              imageBuilder: (context, imageProvider) {
+                return ClipRRect(
                   borderRadius: BorderRadius.circular(15),
                   child: Image(
                     image: imageProvider,
+                    fit: BoxFit.cover,
                     width: 110,
                     height: 163,
                   ),
-                ),
-                SizedBox(
-                  height: 6,
-                ),
-                Text(
-                  title,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                  style: _textStyleApp.textXL.copyWith(
-                      color: _colorApp.textCol2, fontWeight: FontWeight.w600),
-                )
-              ],
-            );
-          },
-          placeholder: (context, url) {
-            return ShimmerCard();
-          },
-          errorWidget: (context, url, error) => Icon(
-            Icons.error_outline_rounded,
-            color: Colors.red,
-            size: 24,
-          ),
+                );
+              },
+              placeholder: (context, url) {
+                return Shimmer.fromColors(
+                    baseColor: _colorApp.baseColShimmer,
+                    highlightColor: _colorApp.highlightColShimmer,
+                    child: Container(
+                      width: 110,
+                      height: 163,
+                      decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(15)),
+                    ));
+              },
+              errorWidget: (context, url, error) => Icon(
+                Icons.error_outline_rounded,
+                color: Colors.red,
+                size: 24,
+              ),
+            ),
+            SizedBox(
+              height: 6,
+            ),
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: _textStyleApp.textXL.copyWith(
+                  color: _colorApp.textCol2, fontWeight: FontWeight.w600),
+            )
+          ],
         ),
       ),
     );

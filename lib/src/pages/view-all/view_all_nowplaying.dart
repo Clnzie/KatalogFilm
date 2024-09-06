@@ -1,43 +1,29 @@
 import 'package:Itil.Co/src/SetUp/MovieAPI.dart';
-import 'package:Itil.Co/src/SetUp/modelsAPI/MovieModelApi.dart';
+import 'package:Itil.Co/src/SetUp/modelsAPI/MovieNowPlaying.dart';
 import 'package:Itil.Co/src/Utils/color.dart';
-import 'package:Itil.Co/src/Utils/constant.dart';
 import 'package:Itil.Co/src/Utils/typography.dart';
-import 'package:Itil.Co/src/pages/core/homepage.dart';
-import 'package:Itil.Co/src/pages/core/movie_detail.dart';
-import 'package:Itil.Co/src/widgets/card_movie.dart';
 import 'package:flutter/material.dart';
 
-class ViewAllPopular extends StatefulWidget {
-  ViewAllPopular({super.key});
+import '../../Utils/constant.dart';
+import '../../widgets/card_movie.dart';
+import '../core/homepage.dart';
+import '../core/movie_detail.dart';
+
+class ViewAllNowplaying extends StatefulWidget {
+  const ViewAllNowplaying({super.key});
 
   @override
-  State<ViewAllPopular> createState() => _ViewAllPopularState();
+  State<ViewAllNowplaying> createState() => _ViewAllNowplayingState();
 }
 
-class _ViewAllPopularState extends State<ViewAllPopular> {
+class _ViewAllNowplayingState extends State<ViewAllNowplaying> {
   final ColorApp _colorApp = ColorApp();
   final TextStyleApp _textStyleApp = TextStyleApp();
   final HttpService httpService = HttpService();
-  final List<MoviePopularList> _movieListApi = [];
+  final List<MovieNowPlayingList> _movieList = [];
   final ScrollController scrollController = ScrollController();
   int currentPage = 1;
   bool isLoading = false;
-
-  _paginationMovie() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    List<MoviePopularList> newListApi =
-        await httpService.getMoviePopularList(currentPage);
-
-    setState(() {
-      isLoading = false;
-      _movieListApi.addAll(newListApi);
-      currentPage++;
-    });
-  }
 
   @override
   void initState() {
@@ -55,6 +41,19 @@ class _ViewAllPopularState extends State<ViewAllPopular> {
   void dispose() {
     scrollController.dispose();
     super.dispose();
+  }
+
+  _paginationMovie() async {
+    setState(() {
+      isLoading = true;
+    });
+    List<MovieNowPlayingList> newListApi =
+        await httpService.getMovieNowPlayingList(page: currentPage);
+    setState(() {
+      isLoading = false;
+      _movieList.addAll(newListApi);
+      currentPage++;
+    });
   }
 
   @override
@@ -85,7 +84,7 @@ class _ViewAllPopularState extends State<ViewAllPopular> {
                         )),
                   ),
                   Text(
-                    "Popular",
+                    "Now Playing",
                     style: _textStyleApp.subHead1
                         .copyWith(color: _colorApp.textCol2),
                   )
@@ -100,17 +99,16 @@ class _ViewAllPopularState extends State<ViewAllPopular> {
               physics: NeverScrollableScrollPhysics(),
               padding: EdgeInsets.symmetric(horizontal: 8),
               shrinkWrap: true,
-              itemCount:
-                  isLoading ? _movieListApi.length + 1 : _movieListApi.length,
+              itemCount: isLoading ? _movieList.length + 1 : _movieList.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                mainAxisExtent: 220,
+                mainAxisExtent: 210,
                 mainAxisSpacing: 6,
                 // crossAxisSpacing: 0,
               ),
               itemBuilder: (context, index) {
-                if (index < _movieListApi.length) {
-                  MoviePopularList data = _movieListApi[index];
+                if (index < _movieList.length) {
+                  MovieNowPlayingList data = _movieList[index];
                   return CardMovie(
                     onTap: () {
                       Navigator.push(
@@ -142,8 +140,8 @@ class _ViewAllPopularState extends State<ViewAllPopular> {
 }
 
 
-//  FutureBuilder<MoviePopular>(
-//               future: movie,
+// FutureBuilder<MovieNowPlaying>(
+//               future: movieNowPlaying,
 //               builder: (context, snapshot) {
 //                 if (snapshot.connectionState == ConnectionState.waiting) {
 //                   return GridView.builder(
